@@ -7,7 +7,7 @@ public class RealmManager {
     
     private var _realm: Realm?
     
-    private var realm: Realm {
+    public var realm: Realm {
         if let realm = _realm {
             return realm
         }
@@ -15,8 +15,11 @@ public class RealmManager {
         do {
             let config = Realm.Configuration(
                 inMemoryIdentifier: ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil ? "test" : nil,
-                schemaVersion: 1,
-                deleteRealmIfMigrationNeeded: true
+                schemaVersion: 2,
+                migrationBlock: { migration, oldSchemaVersion in
+                    // Empty migration block - Realm will handle the Set to List migration automatically
+                },
+                deleteRealmIfMigrationNeeded: false
             )
             Realm.Configuration.defaultConfiguration = config
             let realm = try Realm()
@@ -57,5 +60,10 @@ public class RealmManager {
         try realm.write {
             realm.delete(realm.objects(type))
         }
+    }
+    
+    // For testing only
+    public func setRealm(_ realm: Realm) {
+        _realm = realm
     }
 }

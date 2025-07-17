@@ -17,17 +17,23 @@ public struct TabBarView: View {
                 }
                 .tag(1)
             
+            FlashCardQuizView()
+                .tabItem {
+                    Label("Cards", systemImage: "rectangle.on.rectangle")
+                }
+                .tag(2)
+            
             HistoryView()
                 .tabItem {
                     Label("History", systemImage: "clock.arrow.circlepath")
                 }
-                .tag(2)
+                .tag(3)
             
             ProfileView()
                 .tabItem {
                     Label("Profile", systemImage: "person.circle")
                 }
-                .tag(3)
+                .tag(4)
         }
         .accentColor(Color(hex: "#2BB3B3"))
     }

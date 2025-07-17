@@ -19,6 +19,8 @@ public struct ProfileView: View {
                     pairingSection
                         .id(ProfileDestination.pairLater)
                     
+                    pointsSection
+                    
                     streakSection
                         .id(ProfileDestination.history)
                     
@@ -39,6 +41,9 @@ public struct ProfileView: View {
             .onAppear {
                 viewModel.loadUserProfile()
                 viewModel.loadStreak()
+                Task {
+                    await viewModel.loadPoints()
+                }
             }
         }
     }
@@ -89,6 +94,35 @@ public struct ProfileView: View {
             }
         } header: {
             Text("Family Connection")
+        }
+    }
+    
+    private var pointsSection: some View {
+        Section {
+            HStack {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Total Points")
+                        .font(.headline)
+                    Text("Earned from quizzes and sharing")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+                
+                Spacer()
+                
+                HStack(spacing: 8) {
+                    Image(systemName: "star.fill")
+                        .font(.title2)
+                        .foregroundColor(.yellow)
+                    Text("\(viewModel.totalPoints)")
+                        .font(.largeTitle)
+                        .fontWeight(.bold)
+                        .foregroundColor(.yellow)
+                }
+            }
+            .padding(.vertical, 8)
+        } header: {
+            Text("Rewards")
         }
     }
     

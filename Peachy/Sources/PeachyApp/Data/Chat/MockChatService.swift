@@ -8,9 +8,15 @@ public final class MockChatService: ChatServiceProtocol {
     private var threads: [ChatThread] = []
     private var messages: [ChatMessage] = []
     private var isInitialized = false
+    private var authService: AuthServiceProtocol?
     
     public init() {
         // Sample data will be created on first access
+    }
+    
+    // Set auth service after initialization to avoid circular dependency
+    public func setAuthService(_ service: AuthServiceProtocol) {
+        self.authService = service
     }
     
     private func ensureInitialized() {
@@ -37,7 +43,7 @@ public final class MockChatService: ChatServiceProtocol {
     
     public func sendMessage(threadID: String, text: String) async throws -> ChatMessage {
         ensureInitialized()
-        let currentUserID = ServiceContainer.shared.authService.currentUser?.id ?? ""
+        let currentUserID = authService?.currentUser?.id ?? ""
         
         let message = ChatMessage(
             threadID: threadID,
@@ -63,7 +69,7 @@ public final class MockChatService: ChatServiceProtocol {
     
     public func createThread(with userID: String) async throws -> ChatThread {
         ensureInitialized()
-        let currentUserID = ServiceContainer.shared.authService.currentUser?.id ?? ""
+        let currentUserID = authService?.currentUser?.id ?? ""
         
         let thread = ChatThread(
             participantIDs: [currentUserID, userID]
@@ -75,7 +81,7 @@ public final class MockChatService: ChatServiceProtocol {
     
     public func markMessagesAsRead(threadID: String) async throws {
         ensureInitialized()
-        let currentUserID = ServiceContainer.shared.authService.currentUser?.id ?? ""
+        let currentUserID = authService?.currentUser?.id ?? ""
         
         for index in messages.indices {
             if messages[index].threadID == threadID && 
@@ -118,7 +124,7 @@ public final class MockChatService: ChatServiceProtocol {
     
     private func createSampleData() {
         // Create a sample thread with the current user's parent/teen
-        let currentUserID = ServiceContainer.shared.authService.currentUser?.id ?? ""
+        let currentUserID = authService?.currentUser?.id ?? ""
         let otherUserID = "mom-user-id"
         
         var thread = ChatThread(

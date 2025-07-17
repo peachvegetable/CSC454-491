@@ -4,6 +4,7 @@ public struct QuestDetailView: View {
     let quest: Quest
     @Environment(\.dismiss) private var dismiss
     @StateObject private var viewModel = QuestViewModel()
+    @State private var selectedHobby: HobbyPresetItem?
     
     public init(quest: Quest) {
         self.quest = quest
@@ -54,12 +55,14 @@ public struct QuestDetailView: View {
                 
                 Spacer()
                 
-                // Mark Done Button
+                // Continue Button
                 Button(action: {
-                    viewModel.markQuestComplete()
-                    dismiss()
+                    if let firstSelected = viewModel.selectedHobbyIds.first,
+                       let hobby = viewModel.hobbies.first(where: { $0.id == firstSelected }) {
+                        selectedHobby = hobby
+                    }
                 }) {
-                    Text("Mark Done")
+                    Text("Continue")
                         .font(.headline)
                         .foregroundColor(.white)
                         .frame(maxWidth: .infinity)
@@ -83,11 +86,19 @@ public struct QuestDetailView: View {
         .task {
             await viewModel.loadHobbies()
         }
+        .sheet(item: $selectedHobby) { hobby in
+            ShareHobbyFactSheet(hobby: hobby, onDone: { fact in
+                Task {
+                    await viewModel.markQuestComplete(hobby: hobby, fact: fact)
+                    dismiss()
+                }
+            })
+        }
     }
 }
 
 struct QuestHobbyChip: View {
-    let hobby: Hobby
+    let hobby: HobbyPresetItem
     let isSelected: Bool
     let action: () -> Void
     

@@ -3,12 +3,13 @@ import SwiftUI
 
 @MainActor
 public class QuestViewModel: ObservableObject {
-    @Published var hobbies: [Hobby] = []
+    @Published var hobbies: [HobbyPresetItem] = []
     @Published var selectedHobbyIds: Set<String> = []
     @Published var isLoading = true
     
     private let hobbyService = ServiceContainer.shared.hobbyService
     private let authService = ServiceContainer.shared.authService
+    private let questService = ServiceContainer.shared.questService
     
     func loadHobbies() async {
         guard authService.currentUser != nil else {
@@ -16,15 +17,15 @@ public class QuestViewModel: ObservableObject {
             return
         }
         
-        // Get hobby names from service
-        let hobbyNames = hobbyService.getHobbies()
-        
-        // Convert hobby names to Hobby objects using presets
-        hobbies = HobbyPreset.presets.filter { preset in
-            hobbyNames.contains(preset.name)
+        do {
+            // Get hobbies from service
+            hobbies = try await hobbyService.getHobbies()
+            isLoading = false
+        } catch {
+            print("Error loading hobbies: \(error)")
+            hobbies = []
+            isLoading = false
         }
-        
-        isLoading = false
     }
     
     func toggleHobby(_ hobbyId: String) {
@@ -35,11 +36,12 @@ public class QuestViewModel: ObservableObject {
         }
     }
     
-    func markQuestComplete() {
-        let selectedHobbyNames = hobbies
-            .filter { selectedHobbyIds.contains($0.id) }
-            .map { $0.name }
-        print("Quest completed with hobbies: \(selectedHobbyNames)")
-        // TODO: Save quest completion to a service
+    func markQuestComplete(hobby: HobbyPresetItem, fact: String) async {
+        do {
+            try await questService.markDone(hobby: hobby, fact: fact)
+            print("Quest completed with hobby: \(hobby.name)")
+        } catch {
+            print("Error marking quest complete: \(error)")
+        }
     }
 }

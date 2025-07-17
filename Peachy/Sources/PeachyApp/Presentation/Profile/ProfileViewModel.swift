@@ -7,9 +7,11 @@ class ProfileViewModel: ObservableObject {
     @Published var currentStreak = 0
     @Published var pairingCode: String?
     @Published var isLoading = false
+    @Published var totalPoints = 0
     
     private let authService = ServiceContainer.shared.authService
     private let streakService = ServiceContainer.shared.streakService
+    private let pointService = ServiceContainer.shared.pointService
     
     init() {
         loadUserProfile()
@@ -54,6 +56,15 @@ class ProfileViewModel: ObservableObject {
             } catch {
                 print("Error saving pairing code: \(error)")
             }
+        }
+    }
+    
+    func loadPoints() async {
+        guard let userId = userSnapshot?.id else { return }
+        
+        let points = await pointService.total(for: userId)
+        await MainActor.run {
+            totalPoints = points
         }
     }
     
