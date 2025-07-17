@@ -9,6 +9,8 @@ class PulseViewModel: ObservableObject {
     @Published var todaysQuest: Quest? = .sample
     @Published var showEditMood = false
     @Published var activeQuest: Quest?
+    @Published var editingColor: SimpleMoodColor?
+    @Published var editingEmoji: String?
     
     private let authService = ServiceContainer.shared.authService
     private let streakService = ServiceContainer.shared.streakService
@@ -52,5 +54,19 @@ class PulseViewModel: ObservableObject {
     
     func showQuest(_ quest: Quest) {
         activeQuest = quest
+    }
+    
+    func saveEditedMood() async {
+        guard let color = editingColor else { return }
+        
+        do {
+            try await moodService.save(color: color, emoji: editingEmoji)
+            // Reset editing state
+            editingColor = nil
+            editingEmoji = nil
+            showEditMood = false
+        } catch {
+            print("Error saving mood: \(error)")
+        }
     }
 }

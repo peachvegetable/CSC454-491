@@ -46,7 +46,13 @@ public struct PulseView: View {
             viewModel.loadData()
         }
         .sheet(isPresented: $viewModel.showEditMood) {
-            MoodSignalView()
+            ColorWheelView(
+                selectedColor: $viewModel.editingColor,
+                selectedEmoji: $viewModel.editingEmoji,
+                onSave: {
+                    await viewModel.saveEditedMood()
+                }
+            )
         }
         .sheet(item: $viewModel.activeQuest) { quest in
             QuestDetailView(quest: quest)
