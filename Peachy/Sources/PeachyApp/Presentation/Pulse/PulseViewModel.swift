@@ -5,7 +5,9 @@ class PulseViewModel: ObservableObject {
     @Published var todayMoodLog: MoodLog?
     @Published var currentStreak = 0
     @Published var bufferEndTime: Date?
-    @Published var suggestedQuest: Quest?
+    @Published var todaysQuest: Quest? = .sample
+    @Published var showEditMood = false
+    @Published var activeQuest: Quest?
     
     private let authService = ServiceContainer.shared.authService
     private let streakService = ServiceContainer.shared.streakService
@@ -14,7 +16,6 @@ class PulseViewModel: ObservableObject {
     func loadData() {
         loadTodayMood()
         loadStreak()
-        loadSuggestedQuest()
     }
     
     private func loadTodayMood() {
@@ -52,13 +53,7 @@ class PulseViewModel: ObservableObject {
         }
     }
     
-    private func loadSuggestedQuest() {
-        // Mock quest for now
-        suggestedQuest = Quest(
-            id: "1",
-            title: "Share a Hobby",
-            description: "Pick one of your hobbies and share something interesting about it with your family.",
-            category: "connection"
-        )
+    func showQuest(_ quest: Quest) {
+        activeQuest = quest
     }
 }

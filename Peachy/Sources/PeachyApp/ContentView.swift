@@ -44,7 +44,7 @@ struct TeenTabView: View {
                     Label("Hobbies", systemImage: "sparkles")
                 }
             
-            ChatView()
+            ChatListView()
                 .tabItem {
                     Label("Chat", systemImage: "message")
                 }
@@ -71,7 +71,7 @@ struct ParentTabView: View {
                     Label("Learn", systemImage: "book")
                 }
             
-            ChatView()
+            ChatListView()
                 .tabItem {
                     Label("Chat", systemImage: "message")
                 }

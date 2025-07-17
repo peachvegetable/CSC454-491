@@ -129,3 +129,12 @@ swiftlint
 - Always respect teen privacy in design decisions
 - Focus on empathy and positive communication patterns
 - Keep UI playful but respectful of serious topics
+
+## Continuous Improvement
+
+1. **Bug Memory** – After fixing a bug you must:
+   - Add/extend regression tests that would fail without the fix
+   - Append a short entry to `docs/KnownBugs.md` (create if absent) describing root cause and remedy
+   - Treat similar patterns as "known pitfalls" and avoid re-introducing them in future edits
+
+2. **Full-Codebase Scan for New Features** – Before you touch code for a brand-new feature, do a quick repo-wide review (grep/symbol search) to understand existing models, services, and naming; adjust adjacent layers as needed for cohesion

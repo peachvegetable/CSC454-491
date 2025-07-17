@@ -1,6 +1,7 @@
 import Foundation
 import RealmSwift
 
+@MainActor
 public class MockAuthService: AuthServiceProtocol {
     private let keychain = KeychainServiceMock.shared
     private let realmManager = RealmManager.shared

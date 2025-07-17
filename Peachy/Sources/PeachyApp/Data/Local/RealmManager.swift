@@ -1,6 +1,7 @@
 import Foundation
 import RealmSwift
 
+@MainActor
 public class RealmManager {
     public static let shared = RealmManager()
     

@@ -12,7 +12,8 @@ public struct PulseView: View {
                     // Today's Mood Card
                     TodayCard(
                         moodLog: viewModel.todayMoodLog,
-                        streak: viewModel.currentStreak
+                        streak: viewModel.currentStreak,
+                        showEditMood: $viewModel.showEditMood
                     )
                     
                     // Buffer Countdown Chip
@@ -21,8 +22,10 @@ public struct PulseView: View {
                     }
                     
                     // Suggested Quest Card
-                    if let quest = viewModel.suggestedQuest {
-                        SuggestedQuestCard(quest: quest)
+                    if let quest = viewModel.todaysQuest {
+                        SuggestedQuestCard(quest: quest, onStartQuest: {
+                            viewModel.showQuest(quest)
+                        })
                     }
                 }
                 .padding()
@@ -34,6 +37,13 @@ public struct PulseView: View {
         .onAppear {
             viewModel.loadData()
         }
+        .sheet(isPresented: $viewModel.showEditMood) {
+            MoodSignalView()
+                .environmentObject(appState)
+        }
+        .sheet(item: $viewModel.activeQuest) { quest in
+            QuestDetailView(quest: quest)
+        }
     }
 }
 
@@ -41,6 +51,7 @@ struct TodayCard: View {
     let moodLog: MoodLog?
     let streak: Int
     @EnvironmentObject var appRouter: AppRouter
+    @Binding var showEditMood: Bool
     
     var body: some View {
         VStack(spacing: 16) {
@@ -75,8 +86,7 @@ struct TodayCard: View {
                             .foregroundColor(.secondary)
                         
                         Button(action: {
-                            // Navigate to MoodWheel for editing
-                            appRouter.currentRoute = .moodWheel
+                            showEditMood = true
                         }) {
                             Text("Edit")
                                 .font(.caption)
@@ -133,6 +143,7 @@ struct BufferCountdownChip: View {
 
 struct SuggestedQuestCard: View {
     let quest: Quest
+    let onStartQuest: () -> Void
     
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -153,9 +164,7 @@ struct SuggestedQuestCard: View {
                 .foregroundColor(.secondary)
                 .lineLimit(2)
             
-            Button(action: {
-                // Start quest
-            }) {
+            Button(action: onStartQuest) {
                 Text("Start Quest")
                     .font(.footnote)
                     .fontWeight(.medium)
@@ -174,13 +183,6 @@ struct SuggestedQuestCard: View {
     }
 }
 
-// Quest model
-struct Quest: Identifiable {
-    let id: String
-    let title: String
-    let description: String
-    let category: String
-}
 
 #Preview {
     PulseView()

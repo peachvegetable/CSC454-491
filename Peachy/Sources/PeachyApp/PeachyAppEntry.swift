@@ -67,6 +67,13 @@ public struct PeachyAppEntry: View {
         appState.isAuthenticated = authService.isSignedIn
         showOnboarding = !authService.isSignedIn
         
+        // Initialize chat data if user is signed in
+        if authService.isSignedIn {
+            Task { @MainActor in
+                ServiceContainer.shared.chatService.ensureInitialData()
+            }
+        }
+        
         // Mark as initialized after a brief delay to ensure proper rendering
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
             isInitialized = true

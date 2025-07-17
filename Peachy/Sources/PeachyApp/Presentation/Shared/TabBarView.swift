@@ -11,17 +11,23 @@ public struct TabBarView: View {
                 }
                 .tag(0)
             
+            ChatListView()
+                .tabItem {
+                    Label("Chat", systemImage: "bubble.left.and.bubble.right")
+                }
+                .tag(1)
+            
             HistoryView()
                 .tabItem {
                     Label("History", systemImage: "clock.arrow.circlepath")
                 }
-                .tag(1)
+                .tag(2)
             
             ProfileView()
                 .tabItem {
                     Label("Profile", systemImage: "person.circle")
                 }
-                .tag(2)
+                .tag(3)
         }
         .accentColor(Color(hex: "#2BB3B3"))
     }

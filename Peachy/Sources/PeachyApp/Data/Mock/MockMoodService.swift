@@ -1,5 +1,6 @@
 import Foundation
 
+@MainActor
 public class MockMoodService: MoodServiceProtocol {
     private var moodEntries: [MoodEntry] = []
     
@@ -55,5 +56,12 @@ public class MockMoodService: MoodServiceProtocol {
             )
             moodEntries.append(mood)
         }
+    }
+    
+    public func getLatestMoodLog(for userId: String) -> MoodLog? {
+        let predicate = NSPredicate(format: "userId == %@", userId)
+        return RealmManager.shared.fetch(MoodLog.self, predicate: predicate)
+            .sorted(byKeyPath: "createdAt", ascending: false)
+            .first
     }
 }
