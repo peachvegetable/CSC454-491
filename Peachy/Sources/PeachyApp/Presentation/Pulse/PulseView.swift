@@ -9,12 +9,20 @@ public struct PulseView: View {
         NavigationStack {
             ScrollView {
                 VStack(spacing: 20) {
-                    // Today's Mood Card
-                    TodayCard(
-                        moodLog: viewModel.todayMoodLog,
-                        streak: viewModel.currentStreak,
-                        showEditMood: $viewModel.showEditMood
-                    )
+                    // Streak Row - always visible
+                    StreakRow(streak: viewModel.currentStreak)
+                    
+                    // Today's Mood Card or Log Mood Row
+                    if let todayLog = viewModel.todayMoodLog {
+                        TodayCard(
+                            moodLog: todayLog,
+                            showEditMood: $viewModel.showEditMood
+                        )
+                    } else {
+                        LogMoodRow {
+                            viewModel.showEditMood = true
+                        }
+                    }
                     
                     // Buffer Countdown Chip
                     if let bufferEndTime = viewModel.bufferEndTime {
@@ -39,7 +47,6 @@ public struct PulseView: View {
         }
         .sheet(isPresented: $viewModel.showEditMood) {
             MoodSignalView()
-                .environmentObject(appState)
         }
         .sheet(item: $viewModel.activeQuest) { quest in
             QuestDetailView(quest: quest)
@@ -47,52 +54,63 @@ public struct PulseView: View {
     }
 }
 
-struct TodayCard: View {
-    let moodLog: MoodLog?
+struct StreakRow: View {
     let streak: Int
+    
+    var body: some View {
+        HStack {
+            Label("\(streak) day streak", systemImage: "flame.fill")
+                .font(.headline)
+                .foregroundColor(.orange)
+            Spacer()
+        }
+        .padding()
+        .background(Color(.systemBackground))
+        .cornerRadius(12)
+        .shadow(color: .black.opacity(0.05), radius: 5, x: 0, y: 2)
+    }
+}
+
+struct TodayCard: View {
+    let moodLog: SimpleMoodLog
     @EnvironmentObject var appRouter: AppRouter
     @Binding var showEditMood: Bool
     
     var body: some View {
         VStack(spacing: 16) {
             HStack {
-                Text("Today")
+                Text("Today's Mood")
                     .font(.headline)
                 Spacer()
-                Label("\(streak) day streak", systemImage: "flame.fill")
-                    .font(.footnote)
-                    .foregroundColor(.orange)
             }
             
-            if let log = moodLog {
-                HStack(spacing: 20) {
-                    Circle()
-                        .fill(Color(hex: log.colorHex))
-                        .frame(width: 60, height: 60)
+            HStack(spacing: 20) {
+                Circle()
+                    .fill(Color(hex: moodLog.color.hex))
+                    .frame(width: 60, height: 60)
+                
+                if let emoji = moodLog.emoji {
+                    Text(emoji)
+                        .font(.system(size: 50))
+                }
+                
+                Spacer()
+                
+                VStack(alignment: .trailing, spacing: 4) {
+                    Text(moodLog.color.displayName)
+                        .font(.subheadline)
+                        .fontWeight(.medium)
+                    Text(moodLog.date, style: .time)
+                        .font(.caption)
+                        .foregroundColor(.secondary)
                     
-                    if let emoji = log.emoji {
-                        Text(emoji)
-                            .font(.system(size: 50))
-                    }
-                    
-                    Spacer()
-                    
-                    VStack(alignment: .trailing, spacing: 4) {
-                        Text(log.moodLabel)
-                            .font(.subheadline)
-                            .fontWeight(.medium)
-                        Text(log.createdAt, style: .time)
+                    Button(action: {
+                        showEditMood = true
+                    }) {
+                        Text("Edit")
                             .font(.caption)
-                            .foregroundColor(.secondary)
-                        
-                        Button(action: {
-                            showEditMood = true
-                        }) {
-                            Text("Edit")
-                                .font(.caption)
-                                .fontWeight(.medium)
-                                .foregroundColor(Color(hex: "#2BB3B3"))
-                        }
+                            .fontWeight(.medium)
+                            .foregroundColor(Color(hex: "#2BB3B3"))
                     }
                 }
             }
@@ -183,6 +201,31 @@ struct SuggestedQuestCard: View {
     }
 }
 
+
+struct LogMoodRow: View {
+    let action: () -> Void
+    
+    var body: some View {
+        Button(action: action) {
+            HStack(spacing: 16) {
+                Image(systemName: "plus.circle.fill")
+                    .font(.title)
+                    .foregroundColor(Color(hex: "#2BB3B3"))
+                
+                Text("Log your mood")
+                    .font(.headline)
+                    .foregroundColor(.primary)
+                
+                Spacer()
+            }
+            .padding()
+            .background(Color(.systemBackground))
+            .cornerRadius(12)
+            .shadow(color: .black.opacity(0.05), radius: 5, x: 0, y: 2)
+        }
+        .buttonStyle(PlainButtonStyle())
+    }
+}
 
 #Preview {
     PulseView()

@@ -1,8 +1,9 @@
 import Foundation
+import Combine
 
 @MainActor
 class PulseViewModel: ObservableObject {
-    @Published var todayMoodLog: MoodLog?
+    @Published var todayMoodLog: SimpleMoodLog?
     @Published var currentStreak = 0
     @Published var bufferEndTime: Date?
     @Published var todaysQuest: Quest? = .sample
@@ -11,7 +12,19 @@ class PulseViewModel: ObservableObject {
     
     private let authService = ServiceContainer.shared.authService
     private let streakService = ServiceContainer.shared.streakService
-    private let realmManager = RealmManager.shared
+    private let moodService = ServiceContainer.shared.moodService
+    private var cancellables = Set<AnyCancellable>()
+    
+    init() {
+        // Subscribe to mood service updates
+        moodService.todaysLogPublisher
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] log in
+                self?.todayMoodLog = log
+                self?.updateBufferTime(from: log)
+            }
+            .store(in: &cancellables)
+    }
     
     func loadData() {
         loadTodayMood()
@@ -19,30 +32,14 @@ class PulseViewModel: ObservableObject {
     }
     
     private func loadTodayMood() {
-        guard let userId = authService.currentUser?.id else { return }
-        
-        let calendar = Calendar.current
-        let startOfDay = calendar.startOfDay(for: Date())
-        let endOfDay = calendar.date(byAdding: .day, value: 1, to: startOfDay) ?? Date()
-        
-        let predicate = NSPredicate(
-            format: "userId == %@ AND createdAt >= %@ AND createdAt < %@",
-            userId, startOfDay as NSDate, endOfDay as NSDate
-        )
-        
-        todayMoodLog = realmManager.fetch(MoodLog.self, predicate: predicate)
-            .sorted(byKeyPath: "createdAt", ascending: false)
-            .first
-        
-        // Check for active buffer
-        if let log = todayMoodLog,
-           let bufferMinutes = log.bufferMinutes,
-           bufferMinutes > 0 {
-            let bufferEnd = log.createdAt.addingTimeInterval(TimeInterval(bufferMinutes * 60))
-            if bufferEnd > Date() {
-                bufferEndTime = bufferEnd
-            }
-        }
+        todayMoodLog = moodService.todaysLog
+        updateBufferTime(from: todayMoodLog)
+    }
+    
+    private func updateBufferTime(from log: SimpleMoodLog?) {
+        // For now, we'll set a default buffer time
+        // In a real app, this would be stored with the mood log
+        bufferEndTime = nil
     }
     
     private func loadStreak() {

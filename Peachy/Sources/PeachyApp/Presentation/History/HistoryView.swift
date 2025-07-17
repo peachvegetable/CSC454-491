@@ -6,30 +6,30 @@ public struct HistoryView: View {
     public var body: some View {
         NavigationStack {
             List {
-                ForEach(viewModel.groupedMoodLogs, id: \.key) { date, logs in
-                    Section(header: Text(date, style: .date)) {
-                        ForEach(logs) { log in
-                            MoodHistoryRow(log: log)
-                        }
-                    }
+                ForEach(viewModel.moodLogs) { log in
+                    MoodHistoryRow(log: log)
                 }
+                .onDelete(perform: viewModel.deleteLogs)
             }
             .navigationTitle("Mood History")
             .navigationBarTitleDisplayMode(.large)
-            .onAppear {
-                viewModel.loadHistory()
+            .refreshable {
+                await viewModel.loadHistory()
+            }
+            .task {
+                await viewModel.loadHistory()
             }
         }
     }
 }
 
 struct MoodHistoryRow: View {
-    let log: MoodLog
+    let log: SimpleMoodLog
     
     var body: some View {
         HStack(spacing: 12) {
             Circle()
-                .fill(Color(hex: log.colorHex))
+                .fill(Color(hex: log.color.hex))
                 .frame(width: 40, height: 40)
             
             if let emoji = log.emoji {
@@ -38,40 +38,64 @@ struct MoodHistoryRow: View {
             }
             
             VStack(alignment: .leading, spacing: 4) {
-                Text(log.moodLabel)
+                Text(log.color.displayName)
                     .font(.subheadline)
                     .fontWeight(.medium)
-                Text(log.createdAt, style: .time)
+                Text(log.date.formatted(date: .omitted, time: .shortened))
                     .font(.caption)
                     .foregroundColor(.secondary)
             }
             
             Spacer()
+            
+            Text(relativeDateString(for: log.date))
+                .font(.caption2)
+                .foregroundColor(.secondary)
         }
         .padding(.vertical, 4)
+    }
+    
+    private func relativeDateString(for date: Date) -> String {
+        let calendar = Calendar.current
+        let now = Date()
+        
+        if calendar.isDateInToday(date) {
+            return "Today"
+        } else if calendar.isDateInYesterday(date) {
+            return "Yesterday"
+        } else {
+            return date.formatted(date: .abbreviated, time: .omitted)
+        }
     }
 }
 
 @MainActor
 class HistoryViewModel: ObservableObject {
-    @Published var groupedMoodLogs: [(key: Date, value: [MoodLog])] = []
+    @Published var moodLogs: [SimpleMoodLog] = []
     
-    private let authService = ServiceContainer.shared.authService
-    private let realmManager = RealmManager.shared
+    private let moodService = ServiceContainer.shared.moodService
     
-    func loadHistory() {
-        guard let userId = authService.currentUser?.id else { return }
-        
-        let predicate = NSPredicate(format: "userId == %@", userId)
-        let logs = realmManager.fetch(MoodLog.self, predicate: predicate)
-            .sorted(byKeyPath: "createdAt", ascending: false)
-        
-        // Group by date
-        let grouped = Dictionary(grouping: Array(logs)) { log in
-            Calendar.current.startOfDay(for: log.createdAt)
+    func loadHistory() async {
+        do {
+            moodLogs = try await moodService.allLogs()
+        } catch {
+            print("Error loading mood history: \(error)")
         }
-        
-        groupedMoodLogs = grouped.sorted { $0.key > $1.key }
+    }
+    
+    func deleteLogs(at offsets: IndexSet) {
+        Task {
+            for index in offsets {
+                let log = moodLogs[index]
+                do {
+                    try await moodService.deleteLog(log)
+                    // Reload to get updated list
+                    await loadHistory()
+                } catch {
+                    print("Error deleting log: \(error)")
+                }
+            }
+        }
     }
 }
 

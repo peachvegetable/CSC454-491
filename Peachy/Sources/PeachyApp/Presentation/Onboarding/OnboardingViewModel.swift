@@ -77,21 +77,25 @@ class OnboardingViewModel: ObservableObject {
     }
     
     func saveMood(_ mood: MoodColor, emoji: String?) async {
-        guard let user = authService.currentUser else { return }
+        guard authService.currentUser != nil else { return }
         
-        let moodLog = MoodLog()
-        moodLog.userId = user.id
-        moodLog.colorHex = mood.hex
-        moodLog.moodLabel = mood.rawValue
-        moodLog.emoji = emoji
+        // Convert MoodColor to SimpleMoodColor
+        let simpleColor: SimpleMoodColor
+        switch mood {
+        case .good:
+            simpleColor = .green
+        case .okay:
+            simpleColor = .yellow
+        case .tough:
+            simpleColor = .red
+        }
         
-        await MainActor.run {
-            do {
-                let realmManager = RealmManager.shared
-                try realmManager.save(moodLog)
-            } catch {
-                print("Error saving mood: \(error)")
-            }
+        // Save using the mood service
+        do {
+            let moodService = ServiceContainer.shared.moodService
+            try await moodService.save(color: simpleColor, emoji: emoji)
+        } catch {
+            print("Error saving mood: \(error)")
         }
     }
 }

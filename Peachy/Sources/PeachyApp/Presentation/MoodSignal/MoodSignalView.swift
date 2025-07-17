@@ -3,41 +3,49 @@ import UIKit
 
 struct MoodSignalView: View {
     @StateObject private var viewModel = MoodSignalViewModel()
+    @Environment(\.dismiss) private var dismiss
     
     var body: some View {
         NavigationStack {
-            VStack(spacing: 30) {
-                Text("How are you feeling?")
-                    .font(.title2)
-                    .fontWeight(.semibold)
-                    .padding(.top)
-                
-                MoodWheelComponent(selectedMood: $viewModel.selectedMood)
-                    .frame(height: 300)
-                    .padding()
-                
-                if let mood = viewModel.selectedMood {
-                    VStack(spacing: 16) {
-                        Text(mood.emoji)
-                            .font(.system(size: 60))
-                        
-                        Text(mood.name)
-                            .font(.headline)
-                            .foregroundColor(mood.color)
-                    }
-                    .transition(.scale.combined(with: .opacity))
-                }
-                
-                Spacer()
-                
-                if viewModel.selectedMood != nil {
-                    CalmBufferControl(viewModel: viewModel)
+            ScrollView {
+                VStack(spacing: 24) {
+                    Text("How are you feeling?")
+                        .font(.title2)
+                        .fontWeight(.semibold)
+                        .padding(.top)
+                    
+                    MoodWheelComponent(selectedMood: $viewModel.selectedMood)
+                        .frame(height: 300)
                         .padding(.horizontal)
-                        .transition(.move(edge: .bottom).combined(with: .opacity))
+                    
+                    if let mood = viewModel.selectedMood {
+                        VStack(spacing: 16) {
+                            Text(mood.emoji)
+                                .font(.system(size: 60))
+                            
+                            Text(mood.name)
+                                .font(.headline)
+                                .foregroundColor(mood.color)
+                        }
+                        .transition(.scale.combined(with: .opacity))
+                    }
+                    
+                    if viewModel.selectedMood != nil {
+                        CalmBufferControl(viewModel: viewModel, dismiss: dismiss)
+                            .padding(.horizontal)
+                            .transition(.move(edge: .bottom).combined(with: .opacity))
+                    }
+                    
+                    Spacer(minLength: 20)
                 }
+                .padding(.vertical)
             }
             .navigationTitle("Mood Signal")
+            .navigationBarTitleDisplayMode(.inline)
             .animation(.spring(), value: viewModel.selectedMood)
+        }
+        .onAppear {
+            viewModel.loadTodaysLog()
         }
     }
 }
@@ -154,6 +162,7 @@ struct MoodSegment: View {
 // MARK: - Calm Buffer Control
 struct CalmBufferControl: View {
     @ObservedObject var viewModel: MoodSignalViewModel
+    let dismiss: DismissAction
     
     var body: some View {
         VStack(spacing: 16) {
@@ -170,7 +179,12 @@ struct CalmBufferControl: View {
                     .accentColor(Color("BrandTeal"))
             }
             
-            Button(action: viewModel.sendMoodSignal) {
+            Button(action: {
+                Task {
+                    await viewModel.sendMoodSignal()
+                    dismiss()
+                }
+            }) {
                 Text("Send Mood Signal")
                     .font(.headline)
                     .foregroundColor(.white)
@@ -195,40 +209,53 @@ struct Mood: Identifiable, Equatable {
     let name: String
     let emoji: String
     let color: Color
+    let simpleColor: SimpleMoodColor
     
     static let defaultMoods: [Mood] = [
-        Mood(index: 0, name: "Happy", emoji: "😊", color: .yellow),
-        Mood(index: 1, name: "Excited", emoji: "🤩", color: .orange),
-        Mood(index: 2, name: "Calm", emoji: "😌", color: .green),
-        Mood(index: 3, name: "Sad", emoji: "😢", color: .blue),
-        Mood(index: 4, name: "Anxious", emoji: "😰", color: .purple),
-        Mood(index: 5, name: "Angry", emoji: "😠", color: .red),
-        Mood(index: 6, name: "Confused", emoji: "😕", color: Color.gray),
-        Mood(index: 7, name: "Tired", emoji: "😴", color: .indigo)
+        Mood(index: 0, name: "Happy", emoji: "😊", color: .green, simpleColor: .green),
+        Mood(index: 1, name: "Excited", emoji: "🤩", color: .green, simpleColor: .green),
+        Mood(index: 2, name: "Calm", emoji: "😌", color: .green, simpleColor: .green),
+        Mood(index: 3, name: "Okay", emoji: "😐", color: .yellow, simpleColor: .yellow),
+        Mood(index: 4, name: "Anxious", emoji: "😰", color: .yellow, simpleColor: .yellow),
+        Mood(index: 5, name: "Angry", emoji: "😠", color: .red, simpleColor: .red),
+        Mood(index: 6, name: "Sad", emoji: "😢", color: .red, simpleColor: .red),
+        Mood(index: 7, name: "Tired", emoji: "😴", color: .yellow, simpleColor: .yellow)
     ]
 }
 
 // MARK: - View Model
+@MainActor
 class MoodSignalViewModel: ObservableObject {
     @Published var selectedMood: Mood?
     @Published var bufferMinutes: Double = 30
     
-    func sendMoodSignal() {
+    private let moodService = ServiceContainer.shared.moodService
+    
+    func loadTodaysLog() {
+        if let todaysLog = moodService.todaysLog {
+            // Pre-select today's mood if it exists
+            selectedMood = Mood.defaultMoods.first { mood in
+                mood.simpleColor == todaysLog.color && 
+                mood.emoji == todaysLog.emoji
+            }
+        }
+    }
+    
+    func sendMoodSignal() async {
         guard let mood = selectedMood else { return }
         
         // Haptic feedback
         let impact = UIImpactFeedbackGenerator(style: .medium)
         impact.impactOccurred()
         
-        // Schedule notification
-        scheduleBufferNotification()
-        
-        // Log mood (mock)
-        print("Mood signal sent: \(mood.name) with \(Int(bufferMinutes)) minute buffer")
-    }
-    
-    private func scheduleBufferNotification() {
-        // Mock notification scheduling
-        // In real app, use UNUserNotificationCenter
+        // Save mood
+        do {
+            try await moodService.save(color: mood.simpleColor, emoji: mood.emoji)
+            
+            // Schedule notification
+            try await moodService.scheduleMoodNotification(after: Int(bufferMinutes))
+        } catch {
+            print("Error saving mood: \(error)")
+        }
     }
 }
