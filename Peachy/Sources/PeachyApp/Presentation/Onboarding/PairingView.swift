@@ -21,13 +21,13 @@ struct PairingView: View {
                     .font(.title)
                     .fontWeight(.semibold)
                 
-                Text("Link with your \(appState.userRole == .teen ? "parent" : "teen") to start sharing moods and activities")
+                Text("Link with your \(appState.userRole == UserRole.teen ? "parent" : "teen") to start sharing moods and activities")
                     .font(.body)
                     .foregroundColor(.secondary)
                     .multilineTextAlignment(.center)
                     .padding(.horizontal)
                 
-                if appState.userRole == .parent {
+                if appState.userRole == UserRole.parent {
                     parentView
                 } else {
                     teenView

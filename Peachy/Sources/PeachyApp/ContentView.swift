@@ -1,10 +1,12 @@
 import SwiftUI
 
-struct ContentView: View {
+public struct ContentView: View {
     @EnvironmentObject var appState: AppState
     @Environment(\.injected) var container: ServiceContainer
     
-    var body: some View {
+    public init() {}
+    
+    public var body: some View {
         Group {
             if !appState.isAuthenticated {
                 OnboardingFlow()
@@ -20,7 +22,7 @@ struct ContentView: View {
     
     @ViewBuilder
     private var mainTabView: some View {
-        if appState.userRole == .teen {
+        if appState.userRole == UserRole.teen {
             TeenTabView()
         } else {
             ParentTabView()

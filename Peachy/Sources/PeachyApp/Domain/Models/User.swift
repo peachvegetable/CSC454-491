@@ -3,18 +3,14 @@ import Foundation
 struct User: Identifiable, Codable {
     let id: String
     let email: String
-    let role: UserRole
+    let role: String // Changed from UserRole to String to avoid conflict
     let createdAt: Date
-    var profile: UserProfile?
+    var profileData: LegacyUserProfile? // Renamed to avoid conflict
     var circleId: String?
-    
-    enum UserRole: String, Codable, CaseIterable {
-        case teen
-        case parent
-    }
 }
 
-struct UserProfile: Codable {
+// Renamed to avoid conflict with the Realm UserProfile
+struct LegacyUserProfile: Codable {
     var displayName: String
     var avatarEmoji: String
     var hobbies: [String]

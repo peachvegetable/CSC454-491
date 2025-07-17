@@ -1,17 +1,28 @@
 import Foundation
 import SwiftUI
 
-struct MoodEntry: Identifiable, Codable {
-    let id: String
-    let userId: String
-    let moodType: MoodType
-    let intensity: Double
-    let bufferMinutes: Int
-    let createdAt: Date
-    let sentAt: Date?
-    var note: String?
+public struct MoodEntry: Identifiable, Codable {
+    public let id: String
+    public let userId: String
+    public let moodType: MoodType
+    public let intensity: Double
+    public let bufferMinutes: Int
+    public let createdAt: Date
+    public let sentAt: Date?
+    public var note: String?
     
-    enum MoodType: String, Codable, CaseIterable {
+    public init(id: String, userId: String, moodType: MoodType, intensity: Double, bufferMinutes: Int, createdAt: Date, sentAt: Date? = nil, note: String? = nil) {
+        self.id = id
+        self.userId = userId
+        self.moodType = moodType
+        self.intensity = intensity
+        self.bufferMinutes = bufferMinutes
+        self.createdAt = createdAt
+        self.sentAt = sentAt
+        self.note = note
+    }
+    
+    public enum MoodType: String, Codable, CaseIterable {
         case happy
         case excited
         case calm
@@ -21,7 +32,7 @@ struct MoodEntry: Identifiable, Codable {
         case confused
         case tired
         
-        var emoji: String {
+        public var emoji: String {
             switch self {
             case .happy: return "😊"
             case .excited: return "🤩"
@@ -34,7 +45,7 @@ struct MoodEntry: Identifiable, Codable {
             }
         }
         
-        var colorHex: String {
+        public var colorHex: String {
             switch self {
             case .happy: return "#FFD700"
             case .excited: return "#FF8C00"
@@ -49,12 +60,12 @@ struct MoodEntry: Identifiable, Codable {
     }
 }
 
-struct MoodHistory: Codable {
-    let userId: String
-    let entries: [MoodEntry]
-    let lastUpdated: Date
+public struct MoodHistory: Codable {
+    public let userId: String
+    public let entries: [MoodEntry]
+    public let lastUpdated: Date
     
-    var dailyAverage: MoodEntry.MoodType? {
+    public var dailyAverage: MoodEntry.MoodType? {
         guard !entries.isEmpty else { return nil }
         // Simplified logic - return most frequent mood
         let moodCounts = entries.reduce(into: [:]) { counts, entry in
@@ -63,7 +74,7 @@ struct MoodHistory: Codable {
         return moodCounts.max(by: { $0.value < $1.value })?.key
     }
     
-    var weeklyTrend: [MoodEntry.MoodType] {
+    public var weeklyTrend: [MoodEntry.MoodType] {
         // Group by day and get dominant mood
         let calendar = Calendar.current
         let grouped = Dictionary(grouping: entries) { entry in

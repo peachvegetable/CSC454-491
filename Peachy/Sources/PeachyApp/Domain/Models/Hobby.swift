@@ -1,14 +1,23 @@
 import Foundation
 
-struct Hobby: Identifiable, Codable {
-    let id: String
-    let name: String
-    let category: HobbyCategory
-    let description: String
-    let emoji: String
-    var learnMoreUrl: String?
+public struct Hobby: Identifiable, Codable {
+    public let id: String
+    public let name: String
+    public let category: HobbyCategory
+    public let description: String
+    public let emoji: String
+    public var learnMoreUrl: String?
     
-    enum HobbyCategory: String, Codable, CaseIterable {
+    public init(id: String, name: String, category: HobbyCategory, description: String, emoji: String, learnMoreUrl: String? = nil) {
+        self.id = id
+        self.name = name
+        self.category = category
+        self.description = description
+        self.emoji = emoji
+        self.learnMoreUrl = learnMoreUrl
+    }
+    
+    public enum HobbyCategory: String, Codable, CaseIterable {
         case sports = "Sports"
         case arts = "Arts"
         case music = "Music"
@@ -20,7 +29,7 @@ struct Hobby: Identifiable, Codable {
         case creative = "Creative"
         case academic = "Academic"
         
-        var emoji: String {
+        public var emoji: String {
             switch self {
             case .sports: return "⚽"
             case .arts: return "🎨"
@@ -37,19 +46,30 @@ struct Hobby: Identifiable, Codable {
     }
 }
 
-struct HobbyIntroCard: Identifiable, Codable {
-    let id: String
-    let hobbyId: String
-    let userId: String
-    let title: String
-    let introText: String // 60-word AI-generated intro
-    let learnMoreUrl: String
-    let createdAt: Date
-    var isRead: Bool = false
+public struct HobbyIntroCard: Identifiable, Codable {
+    public let id: String
+    public let hobbyId: String
+    public let userId: String
+    public let title: String
+    public let introText: String // 60-word AI-generated intro
+    public let learnMoreUrl: String
+    public let createdAt: Date
+    public var isRead: Bool = false
+    
+    public init(id: String, hobbyId: String, userId: String, title: String, introText: String, learnMoreUrl: String, createdAt: Date, isRead: Bool = false) {
+        self.id = id
+        self.hobbyId = hobbyId
+        self.userId = userId
+        self.title = title
+        self.introText = introText
+        self.learnMoreUrl = learnMoreUrl
+        self.createdAt = createdAt
+        self.isRead = isRead
+    }
 }
 
-struct HobbyPreset {
-    static let presets: [Hobby] = [
+public struct HobbyPreset {
+    public static let presets: [Hobby] = [
         // Sports
         Hobby(id: "1", name: "Basketball", category: .sports, description: "Team sport with hoops", emoji: "🏀"),
         Hobby(id: "2", name: "Soccer", category: .sports, description: "World's most popular sport", emoji: "⚽"),

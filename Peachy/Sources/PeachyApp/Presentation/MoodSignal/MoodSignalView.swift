@@ -12,7 +12,7 @@ struct MoodSignalView: View {
                     .fontWeight(.semibold)
                     .padding(.top)
                 
-                MoodWheelView(selectedMood: $viewModel.selectedMood)
+                MoodWheelComponent(selectedMood: $viewModel.selectedMood)
                     .frame(height: 300)
                     .padding()
                 
@@ -43,7 +43,7 @@ struct MoodSignalView: View {
 }
 
 // MARK: - Mood Wheel View
-struct MoodWheelView: View {
+struct MoodWheelComponent: View {
     @Binding var selectedMood: Mood?
     @State private var dragLocation: CGPoint = .zero
     

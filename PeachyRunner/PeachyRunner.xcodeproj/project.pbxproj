@@ -3,17 +3,18 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 56;
+	objectVersion = 60;
 	objects = {
 
 /* Begin PBXBuildFile section */
 		515DED452E26EDD400EF576C /* PeachyRunnerApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 515DED442E26EDD400EF576C /* PeachyRunnerApp.swift */; };
-		515DED472E26EDD400EF576C /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 515DED462E26EDD400EF576C /* ContentView.swift */; };
 		515DED492E26EDD700EF576C /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 515DED482E26EDD700EF576C /* Assets.xcassets */; };
 		515DED4C2E26EDD700EF576C /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 515DED4B2E26EDD700EF576C /* Preview Assets.xcassets */; };
 		515DED562E26EDD700EF576C /* PeachyRunnerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 515DED552E26EDD700EF576C /* PeachyRunnerTests.swift */; };
 		515DED602E26EDD700EF576C /* PeachyRunnerUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 515DED5F2E26EDD700EF576C /* PeachyRunnerUITests.swift */; };
 		515DED622E26EDD700EF576C /* PeachyRunnerUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 515DED612E26EDD700EF576C /* PeachyRunnerUITestsLaunchTests.swift */; };
+		515DED702E26EF5700EF576C /* PeachyApp in Frameworks */ = {isa = PBXBuildFile; productRef = 515DED6F2E26EF5700EF576C /* PeachyApp */; };
+		515DED732E283CEC00EF576C /* PeachyApp in Frameworks */ = {isa = PBXBuildFile; productRef = 515DED722E283CEC00EF576C /* PeachyApp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -36,7 +37,6 @@
 /* Begin PBXFileReference section */
 		515DED412E26EDD400EF576C /* PeachyRunner.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = PeachyRunner.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		515DED442E26EDD400EF576C /* PeachyRunnerApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PeachyRunnerApp.swift; sourceTree = "<group>"; };
-		515DED462E26EDD400EF576C /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		515DED482E26EDD700EF576C /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		515DED4B2E26EDD700EF576C /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		515DED512E26EDD700EF576C /* PeachyRunnerTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PeachyRunnerTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -51,6 +51,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				515DED732E283CEC00EF576C /* PeachyApp in Frameworks */,
+				515DED702E26EF5700EF576C /* PeachyApp in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -95,7 +97,6 @@
 			isa = PBXGroup;
 			children = (
 				515DED442E26EDD400EF576C /* PeachyRunnerApp.swift */,
-				515DED462E26EDD400EF576C /* ContentView.swift */,
 				515DED482E26EDD700EF576C /* Assets.xcassets */,
 				515DED4A2E26EDD700EF576C /* Preview Content */,
 			);
@@ -143,6 +144,10 @@
 			dependencies = (
 			);
 			name = PeachyRunner;
+			packageProductDependencies = (
+				515DED6F2E26EF5700EF576C /* PeachyApp */,
+				515DED722E283CEC00EF576C /* PeachyApp */,
+			);
 			productName = PeachyRunner;
 			productReference = 515DED412E26EDD400EF576C /* PeachyRunner.app */;
 			productType = "com.apple.product-type.application";
@@ -215,6 +220,9 @@
 				Base,
 			);
 			mainGroup = 515DED382E26EDD400EF576C;
+			packageReferences = (
+				515DED712E283CEC00EF576C /* XCLocalSwiftPackageReference "../Peachy" */,
+			);
 			productRefGroup = 515DED422E26EDD400EF576C /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -257,7 +265,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				515DED472E26EDD400EF576C /* ContentView.swift in Sources */,
 				515DED452E26EDD400EF576C /* PeachyRunnerApp.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -436,9 +443,13 @@
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = uoft.PeachyRunner;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Debug;
 		};
@@ -464,9 +475,13 @@
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = uoft.PeachyRunner;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Release;
 		};
@@ -582,6 +597,24 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCLocalSwiftPackageReference section */
+		515DED712E283CEC00EF576C /* XCLocalSwiftPackageReference "../Peachy" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = ../Peachy;
+		};
+/* End XCLocalSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		515DED6F2E26EF5700EF576C /* PeachyApp */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = PeachyApp;
+		};
+		515DED722E283CEC00EF576C /* PeachyApp */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = PeachyApp;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 515DED392E26EDD400EF576C /* Project object */;
 }
