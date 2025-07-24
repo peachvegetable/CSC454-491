@@ -16,6 +16,7 @@ public class MockMoodService: MoodServiceProtocol {
     public init() {
         // Add some sample data
         generateSampleMoods()
+        generateFamilyMemberMoods()
         updateTodaysLog()
     }
     
@@ -78,8 +79,13 @@ public class MockMoodService: MoodServiceProtocol {
     // MARK: - New SimpleMoodLog methods
     
     public func save(color: SimpleMoodColor, emoji: String?, bufferMinutes: Int? = nil) async throws {
+        // Get current user ID from auth service
+        let authService = ServiceContainer.shared.authService
+        let currentUserId = authService.currentUser?.id ?? "teen-user-id"
+        
         // Create new mood log
         let moodLog = MoodLog(color: color, emoji: emoji)
+        moodLog.userId = currentUserId  // Set the correct user ID
         moodLog.bufferMinutes = bufferMinutes
         
         // Save to Realm for persistence
@@ -88,7 +94,7 @@ public class MockMoodService: MoodServiceProtocol {
         // Create SimpleMoodLog for immediate UI update
         let newLog = SimpleMoodLog(
             id: moodLog.id,
-            userId: "current-user", // In real app, get from auth service
+            userId: currentUserId,
             date: moodLog.createdAt,
             color: color,
             emoji: emoji,
@@ -152,6 +158,36 @@ public class MockMoodService: MoodServiceProtocol {
             )
         } else {
             _todaysLog = nil
+        }
+    }
+    
+    private func generateFamilyMemberMoods() {
+        let familyMembers = [
+            ("mom-user-id", "Mom"),
+            ("dad-user-id", "Dad")
+        ]
+        
+        for (userId, _) in familyMembers {
+            // Generate mood history for each family member
+            for i in 0..<20 {
+                let daysAgo = i / 3 // Multiple moods per day
+                let hoursOffset = (i % 3) * 8 // Morning, afternoon, evening
+                
+                let colors: [SimpleMoodColor] = [.green, .yellow, .red]
+                let emojis = ["😊", "😐", "😔", "😴", "😎", "🤔"]
+                
+                let log = MoodLog()
+                log.userId = userId
+                log.colorHex = colors.randomElement()!.hex
+                log.colorName = colors.randomElement()!.rawValue
+                log.moodLabel = colors.randomElement()!.displayName
+                log.emoji = emojis.randomElement()!
+                log.createdAt = Date()
+                    .addingTimeInterval(TimeInterval(-daysAgo * 86400 - hoursOffset * 3600))
+                log.bufferMinutes = [15, 30, 45, 60].randomElement()
+                
+                try? realmManager.save(log)
+            }
         }
     }
 }

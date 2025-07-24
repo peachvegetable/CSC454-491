@@ -4,6 +4,7 @@ struct MemberProfileView: View {
     let member: FamilyMemberStatus
     @Environment(\.dismiss) private var dismiss
     @StateObject private var viewModel = MemberProfileViewModel()
+    @State private var showMoodJourney = false
     
     var body: some View {
         NavigationView {
@@ -53,6 +54,36 @@ struct MemberProfileView: View {
                     
                     Divider()
                     
+                    // Mood Journey Button
+                    Button(action: { showMoodJourney = true }) {
+                        HStack {
+                            Image(systemName: "chart.line.uptrend.xyaxis")
+                                .font(.title3)
+                                .foregroundColor(Color(hex: "#2BB3B3"))
+                            
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text("View Mood Journey")
+                                    .font(.headline)
+                                    .foregroundColor(.primary)
+                                
+                                Text("See \(member.name)'s mood trends over time")
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                            }
+                            
+                            Spacer()
+                            
+                            Image(systemName: "chevron.right")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
+                        .padding()
+                        .background(Color(.systemGray6))
+                        .cornerRadius(12)
+                    }
+                    .buttonStyle(PlainButtonStyle())
+                    .padding(.horizontal)
+                    
                     // Hobbies Section
                     VStack(alignment: .leading, spacing: 16) {
                         Text("\(member.name)'s Hobbies")
@@ -99,6 +130,9 @@ struct MemberProfileView: View {
             }
             .onAppear {
                 viewModel.loadMemberData(for: member)
+            }
+            .sheet(isPresented: $showMoodJourney) {
+                MemberMoodJourneyView(member: member)
             }
         }
     }
