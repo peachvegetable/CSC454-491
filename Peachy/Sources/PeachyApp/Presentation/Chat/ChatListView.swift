@@ -5,8 +5,11 @@ import SwiftUI
 public struct ChatListView: View {
     @StateObject private var viewModel = ChatListViewModel()
     @State private var path = [ChatThread]()
+    @Binding var hideFloatingButton: Bool
     
-    public init() {}
+    public init(hideFloatingButton: Binding<Bool> = .constant(false)) {
+        self._hideFloatingButton = hideFloatingButton
+    }
     
     public var body: some View {
         NavigationStack(path: $path) {
@@ -19,6 +22,7 @@ public struct ChatListView: View {
                             latestMood: viewModel.getMoodLog(for: thread)
                         )
                         .onTapGesture {
+                            hideFloatingButton = true
                             path.append(thread)
                         }
                         
@@ -30,9 +34,14 @@ public struct ChatListView: View {
             .navigationBarTitleDisplayMode(.large)
             .navigationDestination(for: ChatThread.self) { thread in
                 ChatView(thread: thread)
+                    .toolbar(.hidden, for: .tabBar)
             }
             .onAppear {
                 viewModel.loadThreads()
+            }
+            .onChange(of: path) { newPath in
+                // Hide button when in chat, show when back to list
+                hideFloatingButton = !newPath.isEmpty
             }
         }
     }

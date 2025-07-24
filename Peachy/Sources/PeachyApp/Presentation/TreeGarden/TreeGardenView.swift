@@ -9,15 +9,15 @@ public struct TreeGardenView: View {
     public init() {}
     
     public var body: some View {
-        NavigationStack {
-            ZStack {
-                // Background gradient
-                LinearGradient(
-                    colors: [Color(hex: "#87CEEB"), Color(hex: "#98FB98")],
-                    startPoint: .top,
-                    endPoint: .bottom
-                )
-                .ignoresSafeArea()
+        ZStack {
+            // Background gradient
+            LinearGradient(
+                colors: [Color(hex: "#87CEEB"), Color(hex: "#98FB98")],
+                startPoint: .top,
+                endPoint: .bottom
+            )
+            .ignoresSafeArea()
+            .edgesIgnoringSafeArea(.all)
                 
                 ScrollView {
                     VStack(spacing: 20) {
@@ -63,8 +63,7 @@ public struct TreeGardenView: View {
                             // Tree visualization
                             EnhancedTreeView(tree: currentTree, showWateringAnimation: $showWateringAnimation)
                                 .frame(height: 300)
-                                .padding(.vertical, 10)
-                                .cornerRadius(20)
+                                .clipShape(RoundedRectangle(cornerRadius: 20))
                                 .shadow(radius: 10)
                             
                             // Growth progress
@@ -165,17 +164,16 @@ public struct TreeGardenView: View {
                     }
                     .padding(.top, 20)
                     
-                    }
-                    .padding()
-                    .padding(.bottom, 20) // Extra padding to avoid tab bar
                 }
-                .scrollIndicators(.hidden)
+                .padding()
+                .padding(.bottom, 20) // Extra padding to avoid tab bar
             }
-            .navigationTitle("Tree Garden")
-            .navigationBarTitleDisplayMode(.inline)
-            .sheet(isPresented: $showTreePicker) {
-                TreeCollectionView(viewModel: viewModel)
-            }
+            .scrollIndicators(.hidden)
+        }
+        .navigationTitle("Tree Garden")
+        .navigationBarTitleDisplayMode(.inline)
+        .sheet(isPresented: $showTreePicker) {
+            TreeCollectionView(viewModel: viewModel)
         }
         .onAppear {
             viewModel.loadData()

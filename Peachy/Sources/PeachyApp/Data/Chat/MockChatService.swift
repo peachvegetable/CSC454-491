@@ -17,6 +17,13 @@ public final class MockChatService: ChatServiceProtocol {
     // Set auth service after initialization to avoid circular dependency
     public func setAuthService(_ service: AuthServiceProtocol) {
         self.authService = service
+        // Recreate sample data with correct user IDs
+        if isInitialized {
+            messages.removeAll()
+            threads.removeAll()
+            isInitialized = false
+            ensureInitialized()
+        }
     }
     
     private func ensureInitialized() {
@@ -124,7 +131,7 @@ public final class MockChatService: ChatServiceProtocol {
     
     private func createSampleData() {
         // Create a sample thread with the current user's parent/teen
-        let currentUserID = authService?.currentUser?.id ?? ""
+        let currentUserID = authService?.currentUser?.id ?? "teen-user-id"
         let otherUserID = "mom-user-id"
         
         var thread = ChatThread(

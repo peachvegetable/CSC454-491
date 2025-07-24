@@ -4,6 +4,7 @@ public struct TabBarView: View {
     @State private var selectedTab = 0
     @State private var showMoodSignal = false
     @State private var showProfile = false
+    @State private var hideFloatingButton = false
     @EnvironmentObject var appState: AppState
     
     public var body: some View {
@@ -33,7 +34,7 @@ public struct TabBarView: View {
                         }
                         .tag(0)
                     
-                    ExploreView()
+                    ExploreView(hideFloatingButton: $hideFloatingButton)
                         .tabItem {
                             Image(systemName: "safari")
                             Text("Explore")
@@ -57,7 +58,7 @@ public struct TabBarView: View {
                         }
                         .tag(3)
                     
-                    ChatListView()
+                    ChatListView(hideFloatingButton: $hideFloatingButton)
                         .tabItem {
                             Image(systemName: "bubble.left.and.bubble.right.fill")
                             Text("Chat")
@@ -68,25 +69,27 @@ public struct TabBarView: View {
             }
             
             // Floating Plus Button - positioned in center of tab bar
-            VStack {
-                Spacer()
-                HStack {
+            if !hideFloatingButton {
+                VStack {
                     Spacer()
-                    Button(action: { showMoodSignal = true }) {
-                        ZStack {
-                            Circle()
-                                .fill(Color.black)
-                                .frame(width: 60, height: 60)
-                            
-                            Image(systemName: "plus")
-                                .font(.system(size: 24, weight: .medium))
-                                .foregroundColor(.white)
+                    HStack {
+                        Spacer()
+                        Button(action: { showMoodSignal = true }) {
+                            ZStack {
+                                Circle()
+                                    .fill(Color.black)
+                                    .frame(width: 60, height: 60)
+                                
+                                Image(systemName: "plus")
+                                    .font(.system(size: 24, weight: .medium))
+                                    .foregroundColor(.white)
+                            }
                         }
+                        .shadow(color: .black.opacity(0.25), radius: 4, x: 0, y: 2)
+                        Spacer()
                     }
-                    .shadow(color: .black.opacity(0.25), radius: 4, x: 0, y: 2)
-                    Spacer()
+                    .padding(.bottom, 12) // Position right on the tab bar
                 }
-                .padding(.bottom, 12) // Position right on the tab bar
             }
         }
         .sheet(isPresented: $showMoodSignal) {

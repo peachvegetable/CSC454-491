@@ -2,9 +2,15 @@ import SwiftUI
 
 struct ExploreView: View {
     @State private var selectedGame = 0
+    @State private var navigationPath = NavigationPath()
+    @Binding var hideFloatingButton: Bool
+    
+    init(hideFloatingButton: Binding<Bool> = .constant(false)) {
+        self._hideFloatingButton = hideFloatingButton
+    }
     
     var body: some View {
-        NavigationView {
+        NavigationStack(path: $navigationPath) {
             VStack(spacing: 20) {
                 Text("Explore Activities")
                     .font(.largeTitle)
@@ -14,7 +20,10 @@ struct ExploreView: View {
                 ScrollView {
                     VStack(spacing: 16) {
                         // Tree Garden Card
-                        NavigationLink(destination: TreeGardenView()) {
+                        Button(action: {
+                            hideFloatingButton = true
+                            navigationPath.append("treeGarden")
+                        }) {
                             GameCard(
                                 title: "Tree Garden",
                                 subtitle: "Grow your mood tree",
@@ -26,9 +35,12 @@ struct ExploreView: View {
                                 )
                             )
                         }
+                        .buttonStyle(PlainButtonStyle())
                         
                         // Flash Cards Card
-                        NavigationLink(destination: FlashCardQuizView()) {
+                        Button(action: {
+                            navigationPath.append("flashCards")
+                        }) {
                             GameCard(
                                 title: "Flash Cards",
                                 subtitle: "Test your knowledge",
@@ -40,6 +52,7 @@ struct ExploreView: View {
                                 )
                             )
                         }
+                        .buttonStyle(PlainButtonStyle())
                         
                         // Coming Soon Cards
                         GameCard(
@@ -70,6 +83,19 @@ struct ExploreView: View {
                 }
             }
             .navigationBarHidden(true)
+            .navigationDestination(for: String.self) { destination in
+                switch destination {
+                case "treeGarden":
+                    TreeGardenView()
+                        .onDisappear {
+                            hideFloatingButton = false
+                        }
+                case "flashCards":
+                    FlashCardQuizView()
+                default:
+                    EmptyView()
+                }
+            }
         }
     }
 }
@@ -109,6 +135,6 @@ struct GameCard: View {
 }
 
 #Preview {
-    ExploreView()
+    ExploreView(hideFloatingButton: .constant(false))
         .environmentObject(AppState())
 }

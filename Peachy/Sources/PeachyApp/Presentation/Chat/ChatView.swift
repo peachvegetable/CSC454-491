@@ -64,6 +64,7 @@ public struct ChatView: View {
             .padding()
             .background(Color(UIColor.systemGray6))
         }
+        .background(Color(UIColor.systemBackground))
         .navigationTitle(viewModel.otherUserName)
         .navigationBarTitleDisplayMode(.inline)
         .onAppear {
