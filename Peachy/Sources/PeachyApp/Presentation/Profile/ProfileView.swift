@@ -16,6 +16,8 @@ public struct ProfileView: View {
                 List {
                     userInfoSection
                     
+                    hobbiesSection
+                    
                     pairingSection
                         .id(ProfileDestination.pairLater)
                     
@@ -38,9 +40,14 @@ public struct ProfileView: View {
             .sheet(isPresented: $showPairingCode) {
                 PairingCodeSheet(code: viewModel.pairingCode ?? "")
             }
+            .sheet(isPresented: $viewModel.showAddHobby) {
+                AddHobbySheet()
+                    .environmentObject(viewModel)
+            }
             .onAppear {
                 viewModel.loadUserProfile()
                 viewModel.loadStreak()
+                viewModel.loadUserHobbies()
                 Task {
                     await viewModel.loadPoints()
                 }
@@ -152,6 +159,46 @@ public struct ProfileView: View {
             .padding(.vertical, 8)
         } header: {
             Text("Activity")
+        }
+    }
+    
+    private var hobbiesSection: some View {
+        Section {
+            if viewModel.userHobbies.isEmpty {
+                HStack {
+                    Image(systemName: "star")
+                        .foregroundColor(.gray)
+                    Text("No hobbies added yet")
+                        .foregroundColor(.secondary)
+                }
+                .padding(.vertical, 8)
+            } else {
+                ForEach(viewModel.userHobbies, id: \.name) { hobby in
+                    NavigationLink(destination: HobbyDetailView(hobby: hobby)) {
+                        HStack {
+                            Text(hobby.name)
+                                .font(.subheadline)
+                            Spacer()
+                            if hobby.fact.isEmpty {
+                                Text("Add info")
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                            }
+                        }
+                    }
+                }
+            }
+            
+            Button(action: { viewModel.showAddHobby = true }) {
+                HStack {
+                    Image(systemName: "plus.circle.fill")
+                        .foregroundColor(Color(hex: "#2BB3B3"))
+                    Text("Add Hobby")
+                        .foregroundColor(Color(hex: "#2BB3B3"))
+                }
+            }
+        } header: {
+            Text("My Hobbies")
         }
     }
     

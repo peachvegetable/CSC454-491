@@ -11,18 +11,6 @@ public struct TabBarView: View {
             VStack(spacing: 0) {
                 // Top Navigation Bar
                 HStack {
-                    // App logo/icon
-                    ZStack {
-                        Circle()
-                            .fill(Color(hex: "#FFC7B2"))
-                            .frame(width: 32, height: 32)
-                        
-                        Text("P")
-                            .font(.system(size: 18, weight: .bold, design: .rounded))
-                            .foregroundColor(.white)
-                    }
-                    .padding(.leading)
-                    
                     Spacer()
                     
                     // Profile button in top right

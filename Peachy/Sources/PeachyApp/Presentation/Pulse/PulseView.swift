@@ -283,33 +283,41 @@ struct FamilyMemberStatusSection: View {
 
 struct FamilyMemberStatusView: View {
     let member: FamilyMemberStatus
+    @State private var showMemberProfile = false
     
     var body: some View {
-        VStack(spacing: 8) {
-            ZStack(alignment: .bottomTrailing) {
-                // Profile picture or initial
-                Circle()
-                    .fill(Color.gray.opacity(0.2))
-                    .frame(width: 60, height: 60)
-                    .overlay(
-                        Text(member.initial)
-                            .font(.title2)
-                            .foregroundColor(.gray)
-                    )
+        Button(action: { showMemberProfile = true }) {
+            VStack(spacing: 8) {
+                ZStack(alignment: .bottomTrailing) {
+                    // Profile picture or initial
+                    Circle()
+                        .fill(Color.gray.opacity(0.2))
+                        .frame(width: 60, height: 60)
+                        .overlay(
+                            Text(member.initial)
+                                .font(.title2)
+                                .foregroundColor(.gray)
+                        )
+                    
+                    // Status indicator
+                    Circle()
+                        .fill(member.statusColor)
+                        .frame(width: 16, height: 16)
+                        .overlay(
+                            Circle()
+                                .stroke(Color.white, lineWidth: 2)
+                        )
+                }
                 
-                // Status indicator
-                Circle()
-                    .fill(member.statusColor)
-                    .frame(width: 16, height: 16)
-                    .overlay(
-                        Circle()
-                            .stroke(Color.white, lineWidth: 2)
-                    )
+                Text(member.name)
+                    .font(.caption)
+                    .lineLimit(1)
+                    .foregroundColor(.primary)
             }
-            
-            Text(member.name)
-                .font(.caption)
-                .lineLimit(1)
+        }
+        .buttonStyle(PlainButtonStyle())
+        .sheet(isPresented: $showMemberProfile) {
+            MemberProfileView(member: member)
         }
     }
 }

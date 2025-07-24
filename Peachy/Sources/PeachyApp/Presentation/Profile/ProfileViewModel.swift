@@ -8,14 +8,18 @@ class ProfileViewModel: ObservableObject {
     @Published var pairingCode: String?
     @Published var isLoading = false
     @Published var totalPoints = 0
+    @Published var userHobbies: [HobbyModel] = []
+    @Published var showAddHobby = false
     
     private let authService = ServiceContainer.shared.authService
     private let streakService = ServiceContainer.shared.streakService
     private let pointService = ServiceContainer.shared.pointService
+    private let hobbyService = ServiceContainer.shared.hobbyService
     
     init() {
         loadUserProfile()
         loadStreak()
+        loadUserHobbies()
     }
     
     func loadUserProfile() {
@@ -76,6 +80,25 @@ class ProfileViewModel: ObservableObject {
             try await authService.signOut()
         } catch {
             print("Error signing out: \(error)")
+        }
+    }
+    
+    func loadUserHobbies() {
+        guard let user = authService.currentUser else { return }
+        
+        // Load hobbies from user's hobby list
+        let hobbyNames = Array(user.hobbies)
+        
+        // Create HobbyModel objects from the hobby names
+        userHobbies = hobbyNames.map { name in
+            // Check if there's an existing hobby in the database
+            if let existingHobby = RealmManager.shared.fetch(HobbyModel.self, 
+                predicate: NSPredicate(format: "name == %@ AND ownerId == %@", name, user.id)).first {
+                return existingHobby
+            } else {
+                // Create a new hobby model
+                return HobbyModel(name: name, ownerId: user.id, fact: "")
+            }
         }
     }
 }
