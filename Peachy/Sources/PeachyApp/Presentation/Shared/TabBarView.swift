@@ -2,40 +2,115 @@ import SwiftUI
 
 public struct TabBarView: View {
     @State private var selectedTab = 0
+    @State private var showMoodSignal = false
+    @State private var showProfile = false
+    @EnvironmentObject var appState: AppState
     
     public var body: some View {
-        TabView(selection: $selectedTab) {
-            PulseView()
-                .tabItem {
-                    Label("Pulse", systemImage: "waveform.path.ecg")
+        ZStack {
+            VStack(spacing: 0) {
+                // Top Navigation Bar
+                HStack {
+                    // App logo/icon
+                    ZStack {
+                        Circle()
+                            .fill(Color(hex: "#FFC7B2"))
+                            .frame(width: 32, height: 32)
+                        
+                        Text("P")
+                            .font(.system(size: 18, weight: .bold, design: .rounded))
+                            .foregroundColor(.white)
+                    }
+                    .padding(.leading)
+                    
+                    Spacer()
+                    
+                    // Profile button in top right
+                    Button(action: { showProfile = true }) {
+                        Image(systemName: "person.circle.fill")
+                            .font(.system(size: 28))
+                            .foregroundColor(Color(hex: "#2BB3B3"))
+                    }
+                    .padding(.trailing)
                 }
-                .tag(0)
+                .padding(.vertical, 8)
+                .background(Color(UIColor.systemBackground))
+                
+                // Main Tab Content
+                TabView(selection: $selectedTab) {
+                    PulseView()
+                        .tabItem {
+                            Image(systemName: "house.fill")
+                            Text("Pulse")
+                        }
+                        .tag(0)
+                    
+                    ExploreView()
+                        .tabItem {
+                            Image(systemName: "safari")
+                            Text("Explore")
+                        }
+                        .tag(1)
+                    
+                    // Empty view for center plus button
+                    Color.clear
+                        .tabItem {
+                            Image(systemName: "plus")
+                                .opacity(0)
+                            Text(" ")
+                        }
+                        .tag(2)
+                        .disabled(true)
+                    
+                    JourneyView()
+                        .tabItem {
+                            Image(systemName: "chart.line.uptrend.xyaxis")
+                            Text("Journey")
+                        }
+                        .tag(3)
+                    
+                    ChatListView()
+                        .tabItem {
+                            Image(systemName: "bubble.left.and.bubble.right.fill")
+                            Text("Chat")
+                        }
+                        .tag(4)
+                }
+                .accentColor(Color(hex: "#2BB3B3"))
+            }
             
-            ChatListView()
-                .tabItem {
-                    Label("Chat", systemImage: "bubble.left.and.bubble.right")
+            // Floating Plus Button - positioned in center of tab bar
+            VStack {
+                Spacer()
+                HStack {
+                    Spacer()
+                    Button(action: { showMoodSignal = true }) {
+                        ZStack {
+                            Circle()
+                                .fill(Color.black)
+                                .frame(width: 60, height: 60)
+                            
+                            Image(systemName: "plus")
+                                .font(.system(size: 24, weight: .medium))
+                                .foregroundColor(.white)
+                        }
+                    }
+                    .shadow(color: .black.opacity(0.25), radius: 4, x: 0, y: 2)
+                    Spacer()
                 }
-                .tag(1)
-            
-            FlashCardQuizView()
-                .tabItem {
-                    Label("Cards", systemImage: "rectangle.on.rectangle")
-                }
-                .tag(2)
-            
-            HistoryView()
-                .tabItem {
-                    Label("History", systemImage: "clock.arrow.circlepath")
-                }
-                .tag(3)
-            
-            ProfileView()
-                .tabItem {
-                    Label("Profile", systemImage: "person.circle")
-                }
-                .tag(4)
+                .padding(.bottom, 12) // Position right on the tab bar
+            }
         }
-        .accentColor(Color(hex: "#2BB3B3"))
+        .sheet(isPresented: $showMoodSignal) {
+            NavigationView {
+                MoodLoggerView()
+                    .environmentObject(appState)
+            }
+        }
+        .sheet(isPresented: $showProfile) {
+            ProfileView()
+                .environmentObject(appState)
+        }
     }
 }
 

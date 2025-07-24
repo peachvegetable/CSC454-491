@@ -1,10 +1,11 @@
 import Foundation
 import Combine
+import RealmSwift
 
 @MainActor
 public class MockMoodService: MoodServiceProtocol {
     private var moodEntries: [MoodEntry] = []
-    private var simpleLogs: [SimpleMoodLog] = []
+    private let realmManager = RealmManager.shared
     
     @Published private var _todaysLog: SimpleMoodLog?
     public var todaysLog: SimpleMoodLog? { _todaysLog }
@@ -76,32 +77,58 @@ public class MockMoodService: MoodServiceProtocol {
     
     // MARK: - New SimpleMoodLog methods
     
-    public func save(color: SimpleMoodColor, emoji: String?) async throws {
-        // Always append a new log entry
+    public func save(color: SimpleMoodColor, emoji: String?, bufferMinutes: Int? = nil) async throws {
+        // Create new mood log
+        let moodLog = MoodLog(color: color, emoji: emoji)
+        moodLog.bufferMinutes = bufferMinutes
+        
+        // Save to Realm for persistence
+        try realmManager.save(moodLog)
+        
+        // Create SimpleMoodLog for immediate UI update
         let newLog = SimpleMoodLog(
-            date: Date(),
+            id: moodLog.id,
+            userId: "current-user", // In real app, get from auth service
+            date: moodLog.createdAt,
             color: color,
-            emoji: emoji
+            emoji: emoji,
+            bufferMinutes: bufferMinutes
         )
-        simpleLogs.append(newLog)
         
-        // Sort logs by date (newest first)
-        simpleLogs.sort { $0.date > $1.date }
+        // Update today's log
+        _todaysLog = newLog
         
-        // Update today's log to the most recent one
-        updateTodaysLog()
+        print("Mood saved to Realm: \(color.rawValue) with emoji: \(emoji ?? "none") and buffer: \(bufferMinutes ?? 0) minutes")
         
         // Simulate network delay
         try await Task.sleep(nanoseconds: 200_000_000)
     }
     
     public func allLogs() async throws -> [SimpleMoodLog] {
-        // Return logs sorted by date (newest first)
-        return simpleLogs.sorted { $0.date > $1.date }
+        // Fetch from Realm for persistence
+        let realmLogs = realmManager.fetch(MoodLog.self)
+            .sorted(byKeyPath: "createdAt", ascending: false)
+        
+        // Convert to SimpleMoodLog
+        let logs = realmLogs.map { log in
+            SimpleMoodLog(
+                id: log.id,
+                userId: log.userId,
+                date: log.createdAt,
+                color: SimpleMoodColor(rawValue: log.colorName) ?? .green,
+                emoji: log.emoji.isEmpty ? nil : log.emoji,
+                bufferMinutes: log.bufferMinutes
+            )
+        }
+        
+        return Array(logs)
     }
     
     public func deleteLog(_ log: SimpleMoodLog) async throws {
-        simpleLogs.removeAll { $0.id == log.id }
+        // Find and delete from Realm
+        if let realmLog = realmManager.realm.object(ofType: MoodLog.self, forPrimaryKey: log.id) {
+            try realmManager.delete(realmLog)
+        }
         updateTodaysLog()
     }
     
@@ -109,10 +136,22 @@ public class MockMoodService: MoodServiceProtocol {
         let calendar = Calendar.current
         let today = calendar.startOfDay(for: Date())
         
-        // Get the most recent log from today
-        _todaysLog = simpleLogs
-            .filter { log in calendar.isDate(log.date, inSameDayAs: today) }
-            .sorted { $0.date > $1.date }
-            .first
+        // Get the most recent log from today from Realm
+        let todayLogs = realmManager.fetch(MoodLog.self)
+            .filter("createdAt >= %@", today)
+            .sorted(byKeyPath: "createdAt", ascending: false)
+        
+        if let latestLog = todayLogs.first {
+            _todaysLog = SimpleMoodLog(
+                id: latestLog.id,
+                userId: latestLog.userId,
+                date: latestLog.createdAt,
+                color: SimpleMoodColor(rawValue: latestLog.colorName) ?? .green,
+                emoji: latestLog.emoji.isEmpty ? nil : latestLog.emoji,
+                bufferMinutes: latestLog.bufferMinutes
+            )
+        } else {
+            _todaysLog = nil
+        }
     }
 }

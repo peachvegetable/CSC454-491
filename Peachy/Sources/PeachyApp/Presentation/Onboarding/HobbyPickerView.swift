@@ -90,8 +90,9 @@ struct HobbyPickerView: View {
         Task {
             await viewModel.updateHobbies(Array(selectedHobbies))
             await MainActor.run {
-                // Navigate to mood wheel after saving hobbies
-                appRouter.currentRoute = .moodWheel
+                // Navigate to main app after saving hobbies
+                appRouter.currentRoute = .pulse
+                currentStep = .complete
             }
         }
     }

@@ -1,13 +1,75 @@
 import SwiftUI
 
+// BufferDurationView is in the same module, but let's define it here
+struct BufferDurationView: View {
+    @Binding var selectedMinutes: Int
+    @State private var showPicker = false
+    
+    let bufferOptions = [5, 10, 15, 30, 45, 60]
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Calm Buffer Time")
+                .font(.headline)
+            
+            Text("Choose how long before others can see your mood")
+                .font(.caption)
+                .foregroundColor(.secondary)
+            
+            Button(action: { showPicker.toggle() }) {
+                HStack {
+                    Image(systemName: "clock")
+                    Text("\(selectedMinutes) minutes")
+                    Spacer()
+                    Image(systemName: "chevron.right")
+                }
+                .padding()
+                .background(Color(UIColor.secondarySystemBackground))
+                .cornerRadius(12)
+            }
+        }
+        .sheet(isPresented: $showPicker) {
+            NavigationView {
+                List {
+                    ForEach(bufferOptions, id: \.self) { minutes in
+                        HStack {
+                            Text("\(minutes) minutes")
+                            Spacer()
+                            if selectedMinutes == minutes {
+                                Image(systemName: "checkmark")
+                                    .foregroundColor(.brandPeach)
+                            }
+                        }
+                        .contentShape(Rectangle())
+                        .onTapGesture {
+                            selectedMinutes = minutes
+                            showPicker = false
+                        }
+                    }
+                }
+                .navigationTitle("Select Buffer Time")
+                .navigationBarTitleDisplayMode(.inline)
+                .toolbar {
+                    ToolbarItem(placement: .navigationBarTrailing) {
+                        Button("Done") {
+                            showPicker = false
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
 public struct MoodLoggerView: View {
+    @Environment(\.dismiss) private var dismiss
     @EnvironmentObject private var appRouter: AppRouter
     @Environment(\.injected) private var container: ServiceContainer
-    @StateObject private var viewModel = MoodLoggerViewModel()
     @State private var selectedColor: MoodColor?
     @State private var selectedEmoji: String?
     @State private var showEmojiPicker = false
     @State private var isSaving = false
+    @State private var bufferMinutes = 15
     
     public init() {}
     
@@ -16,7 +78,7 @@ public struct MoodLoggerView: View {
             // Header
             VStack(spacing: 8) {
                 Text("How are you feeling today?")
-                    .font(.largeTitle)
+                    .font(.title2)
                     .fontWeight(.semibold)
                 
                 Text("Tap the wheel to select your mood")
@@ -74,6 +136,9 @@ public struct MoodLoggerView: View {
                         .cornerRadius(12)
                     }
                     .transition(.scale.combined(with: .opacity))
+                    
+                    BufferDurationView(selectedMinutes: $bufferMinutes)
+                        .transition(.scale.combined(with: .opacity))
                 }
                 
                 Button(action: saveMood) {
@@ -110,19 +175,32 @@ public struct MoodLoggerView: View {
         
         Task {
             do {
-                // Save mood log
-                let moodLog = try await viewModel.saveMood(
-                    color: color,
+                // Save mood log with SimpleMoodColor
+                let simpleMoodColor: SimpleMoodColor
+                switch color {
+                case .good:
+                    simpleMoodColor = .green
+                case .okay:
+                    simpleMoodColor = .yellow
+                case .tough:
+                    simpleMoodColor = .red
+                }
+                print("Saving mood: \(simpleMoodColor.rawValue), emoji: \(selectedEmoji ?? "none"), buffer: \(bufferMinutes) minutes")
+                try await container.moodService.save(
+                    color: simpleMoodColor, 
                     emoji: selectedEmoji,
-                    userId: container.authService.currentUser?.id ?? ""
+                    bufferMinutes: bufferMinutes
                 )
+                print("Mood saved successfully")
                 
-                // Navigate to Pulse
+                // Dismiss the sheet
                 await MainActor.run {
-                    appRouter.currentRoute = .pulse
+                    isSaving = false
+                    dismiss()
                 }
             } catch {
                 // Handle error
+                print("Error saving mood: \(error)")
                 await MainActor.run {
                     isSaving = false
                 }
@@ -232,22 +310,3 @@ struct MoodSegmentView: View {
     }
 }
 
-// View Model
-@MainActor
-class MoodLoggerViewModel: ObservableObject {
-    func saveMood(color: MoodColor, emoji: String?, userId: String) async throws -> MoodLog {
-        let moodLog = MoodLog()
-        moodLog.userId = userId
-        moodLog.colorHex = color.hex
-        moodLog.moodLabel = color.rawValue
-        moodLog.emoji = emoji
-        moodLog.createdAt = Date()
-        
-        // Save to Realm
-        try await MainActor.run {
-            try RealmManager.shared.save(moodLog)
-        }
-        
-        return moodLog
-    }
-}

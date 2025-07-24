@@ -21,7 +21,7 @@ public struct PeachyAppEntry: View {
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .background(Color(UIColor.systemBackground))
             } else {
-                switch determineRoute() {
+                switch appRouter.currentRoute {
                 case .welcome:
                     OnboardingFlow()
                         .environmentObject(appState)
@@ -55,7 +55,10 @@ public struct PeachyAppEntry: View {
         }
         .onChange(of: appState.isAuthenticated) { newValue in
             showOnboarding = !newValue
-            _ = determineRoute()  // Update route when auth changes
+            if newValue {
+                // When authenticated, determine and set the route
+                appRouter.currentRoute = determineRoute()
+            }
         }
         .onChange(of: appRouter.currentRoute) { _ in
             // Route changes will automatically trigger view updates
@@ -74,6 +77,9 @@ public struct PeachyAppEntry: View {
             }
         }
         
+        // Set initial route
+        appRouter.currentRoute = determineRoute()
+        
         // Mark as initialized after a brief delay to ensure proper rendering
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
             isInitialized = true
@@ -88,31 +94,16 @@ public struct PeachyAppEntry: View {
             return .welcome
         }
         
-        guard let user = authService.currentUser else { return .welcome }
+        guard let user = authService.currentUser else { 
+            return .welcome 
+        }
         
         // No hobbies → HobbyPicker
         if user.hobbies.isEmpty {
             return .hobbyPicker
         }
         
-        // Check if user has logged mood today
-        let calendar = Calendar.current
-        let startOfDay = calendar.startOfDay(for: Date())
-        let endOfDay = calendar.date(byAdding: .day, value: 1, to: startOfDay) ?? Date()
-        
-        let predicate = NSPredicate(
-            format: "userId == %@ AND createdAt >= %@ AND createdAt < %@",
-            user.id, startOfDay as NSDate, endOfDay as NSDate
-        )
-        
-        let todayMoodCount = RealmManager.shared.fetch(MoodLog.self, predicate: predicate).count
-        
-        // No mood today → MoodWheel
-        if todayMoodCount == 0 {
-            return .moodWheel
-        }
-        
-        // Otherwise → Pulse
+        // Go directly to Pulse (main app)
         return .pulse
     }
     

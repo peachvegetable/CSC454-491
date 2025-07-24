@@ -22,7 +22,7 @@ class HomeViewModel: ObservableObject {
         moodLog.userId = user.id
         moodLog.colorHex = mood.hex
         moodLog.moodLabel = mood.rawValue
-        moodLog.emoji = emoji
+        moodLog.emoji = emoji ?? ""
         
         do {
             try realmManager.save(moodLog)

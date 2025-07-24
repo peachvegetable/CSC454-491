@@ -6,7 +6,7 @@ public protocol MoodServiceProtocol {
     var todaysLog: SimpleMoodLog? { get }
     var todaysLogPublisher: AnyPublisher<SimpleMoodLog?, Never> { get }
     
-    func save(color: SimpleMoodColor, emoji: String?) async throws
+    func save(color: SimpleMoodColor, emoji: String?, bufferMinutes: Int?) async throws
     func allLogs() async throws -> [SimpleMoodLog]
     func deleteLog(_ log: SimpleMoodLog) async throws
     

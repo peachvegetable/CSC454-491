@@ -15,20 +15,53 @@ public class RealmManager {
         do {
             let config = Realm.Configuration(
                 inMemoryIdentifier: ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil ? "test" : nil,
-                schemaVersion: 2,
+                schemaVersion: 5, // Increment version for Tree models
                 migrationBlock: { migration, oldSchemaVersion in
-                    // Empty migration block - Realm will handle the Set to List migration automatically
+                    if oldSchemaVersion < 3 {
+                        // Migrate MoodLog objects
+                        migration.enumerateObjects(ofType: MoodLog.className()) { oldObject, newObject in
+                            // Set default values for new required properties
+                            if newObject!["emoji"] == nil {
+                                newObject!["emoji"] = ""
+                            }
+                            if newObject!["colorName"] == nil {
+                                // Try to infer colorName from existing data
+                                if let colorHex = oldObject!["colorHex"] as? String {
+                                    switch colorHex {
+                                    case "#34C759": newObject!["colorName"] = "green"
+                                    case "#FFCC00": newObject!["colorName"] = "yellow"
+                                    case "#FF3B30": newObject!["colorName"] = "red"
+                                    default: newObject!["colorName"] = "green"
+                                    }
+                                } else {
+                                    newObject!["colorName"] = "green"
+                                }
+                            }
+                        }
+                    }
+                    if oldSchemaVersion < 4 {
+                        // bufferMinutes is optional, no migration needed
+                    }
+                    if oldSchemaVersion < 5 {
+                        // Tree models are new, no migration needed
+                    }
                 },
-                deleteRealmIfMigrationNeeded: false
+                deleteRealmIfMigrationNeeded: false,
+                objectTypes: [MoodLog.self, UserProfile.self, HobbyModel.self, FlashCard.self, UserPoint.self, QuestModel.self, Tree.self, TreeCollection.self, CollectedTree.self]
             )
             Realm.Configuration.defaultConfiguration = config
             let realm = try Realm()
             _realm = realm
+            print("Realm initialized successfully with path: \(realm.configuration.fileURL?.path ?? "in-memory")")
             return realm
         } catch {
             print("Failed to initialize Realm: \(error)")
             // Return a default in-memory Realm as fallback
-            let fallbackConfig = Realm.Configuration(inMemoryIdentifier: "fallback")
+            let fallbackConfig = Realm.Configuration(
+                inMemoryIdentifier: "fallback",
+                schemaVersion: 5,
+                objectTypes: [MoodLog.self, UserProfile.self, HobbyModel.self, FlashCard.self, UserPoint.self, QuestModel.self, Tree.self, TreeCollection.self, CollectedTree.self]
+            )
             // swiftlint:disable force_try
             return try! Realm(configuration: fallbackConfig)
             // swiftlint:enable force_try

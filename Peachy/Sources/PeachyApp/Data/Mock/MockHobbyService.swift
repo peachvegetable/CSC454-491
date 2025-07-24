@@ -28,18 +28,24 @@ public final class MockHobbyService: HobbyServiceProtocol {
             throw NSError(domain: "HobbyService", code: 1, userInfo: [NSLocalizedDescriptionKey: "No current user"])
         }
         
+        print("MockHobbyService.saveHobby - Starting save for hobby: \(name), user: \(currentUserId)")
+        
         // Create and save hobby
         let hobby = HobbyModel(name: name, ownerId: currentUserId, fact: fact)
         try realmManager.save(hobby)
+        print("MockHobbyService.saveHobby - Hobby saved with ID: \(hobby.id)")
         
         // Create flash card
         let question = "What's something interesting about \(name)?"
         let flashCard = FlashCard(question: question, answer: fact, hobbyId: hobby.id)
         try realmManager.save(flashCard)
+        print("MockHobbyService.saveHobby - Flash card created with ID: \(flashCard.id)")
         
         // Award points to creator
         if let pointService = pointService {
+            print("MockHobbyService.saveHobby - Awarding 5 points to user: \(currentUserId)")
             await pointService.award(userId: currentUserId, delta: 5)
+            print("MockHobbyService.saveHobby - Points awarded successfully")
         }
     }
     

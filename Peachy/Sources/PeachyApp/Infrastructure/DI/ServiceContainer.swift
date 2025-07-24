@@ -14,6 +14,7 @@ public final class ServiceContainer {
     private let _chatService: ChatServiceProtocol
     private let _pointService: PointServiceProtocol
     private let _questService: QuestServiceProtocol
+    private let _treeService: TreeServiceProtocol
     
     var authService: AuthServiceProtocol { 
         get { _authService }
@@ -28,6 +29,7 @@ public final class ServiceContainer {
     var chatService: ChatServiceProtocol { _chatService }
     var pointService: PointServiceProtocol { _pointService }
     var questService: QuestServiceProtocol { _questService }
+    var treeService: TreeServiceProtocol { _treeService }
     
     private init() {
         // Initialize @MainActor services on main thread
@@ -52,6 +54,9 @@ public final class ServiceContainer {
         }
         self._questService = MainActor.assumeIsolated {
             MockQuestService()
+        }
+        self._treeService = MainActor.assumeIsolated {
+            MockTreeService()
         }
         
         // Set dependencies after initialization to avoid circular references

@@ -2,7 +2,7 @@ import Foundation
 import RealmSwift
 
 public class HobbyModel: Object {
-    @Persisted(primaryKey: true) public var id: ObjectId = ObjectId()
+    @Persisted(primaryKey: true) public var id = ObjectId.generate()
     @Persisted public var name: String = ""
     @Persisted public var ownerId: String = ""  // teen or parent that created it
     @Persisted public var fact: String = ""      // interesting fact added when shared
@@ -11,6 +11,7 @@ public class HobbyModel: Object {
     
     public convenience init(name: String, ownerId: String, fact: String) {
         self.init()
+        self.id = ObjectId.generate()  // Explicitly generate new ID
         self.name = name
         self.ownerId = ownerId
         self.fact = fact
@@ -19,7 +20,7 @@ public class HobbyModel: Object {
 }
 
 public class FlashCard: Object {
-    @Persisted(primaryKey: true) public var id: ObjectId = ObjectId()
+    @Persisted(primaryKey: true) public var id = ObjectId.generate()
     @Persisted public var question: String = ""
     @Persisted public var answer: String = ""
     @Persisted public var hobbyId: ObjectId?
@@ -28,6 +29,7 @@ public class FlashCard: Object {
     
     public convenience init(question: String, answer: String, hobbyId: ObjectId) {
         self.init()
+        self.id = ObjectId.generate()  // Explicitly generate new ID
         self.question = question
         self.answer = answer
         self.hobbyId = hobbyId
@@ -36,13 +38,14 @@ public class FlashCard: Object {
 }
 
 public class UserPoint: Object {
-    @Persisted(primaryKey: true) public var id: ObjectId = ObjectId()
+    @Persisted(primaryKey: true) public var id = ObjectId.generate()
     @Persisted public var userId: String = ""
     @Persisted public var points: Int = 0
     @Persisted public var lastUpdated: Date = Date()
     
     public convenience init(userId: String, points: Int = 0) {
         self.init()
+        self.id = ObjectId.generate()  // Explicitly generate new ID
         self.userId = userId
         self.points = points
         self.lastUpdated = Date()

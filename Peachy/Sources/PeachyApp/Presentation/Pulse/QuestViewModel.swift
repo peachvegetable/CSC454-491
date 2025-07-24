@@ -37,11 +37,13 @@ public class QuestViewModel: ObservableObject {
     }
     
     func markQuestComplete(hobby: HobbyPresetItem, fact: String) async {
+        print("Starting markQuestComplete for hobby: \(hobby.name) with fact: \(fact)")
         do {
             try await questService.markDone(hobby: hobby, fact: fact)
-            print("Quest completed with hobby: \(hobby.name)")
+            print("Quest completed successfully with hobby: \(hobby.name)")
         } catch {
             print("Error marking quest complete: \(error)")
+            print("Error details: \(error.localizedDescription)")
         }
     }
 }

@@ -2,7 +2,7 @@ import Foundation
 import RealmSwift
 
 public class QuestModel: Object {
-    @Persisted(primaryKey: true) public var id: ObjectId = ObjectId()
+    @Persisted(primaryKey: true) public var id = ObjectId.generate()
     @Persisted public var questType: String = "" // Quest.Kind.rawValue
     @Persisted public var userId: String = ""
     @Persisted public var hobbyId: ObjectId?
@@ -13,6 +13,7 @@ public class QuestModel: Object {
     
     public convenience init(questType: String, userId: String, hobbyId: ObjectId? = nil, fact: String = "") {
         self.init()
+        self.id = ObjectId.generate()  // Explicitly generate new ID
         self.questType = questType
         self.userId = userId
         self.hobbyId = hobbyId

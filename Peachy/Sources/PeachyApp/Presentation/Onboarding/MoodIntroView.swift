@@ -24,7 +24,7 @@ struct MoodIntroView: View {
         let moodService = ServiceContainer.shared.moodService
         
         do {
-            try await moodService.save(color: color, emoji: selectedEmoji)
+            try await moodService.save(color: color, emoji: selectedEmoji, bufferMinutes: nil)
             
             // Navigate to pulse after saving
             await MainActor.run {

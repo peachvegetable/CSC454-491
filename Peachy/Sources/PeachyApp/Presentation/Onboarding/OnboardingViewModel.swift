@@ -93,7 +93,7 @@ class OnboardingViewModel: ObservableObject {
         // Save using the mood service
         do {
             let moodService = ServiceContainer.shared.moodService
-            try await moodService.save(color: simpleColor, emoji: emoji)
+            try await moodService.save(color: simpleColor, emoji: emoji, bufferMinutes: nil)
         } catch {
             print("Error saving mood: \(error)")
         }

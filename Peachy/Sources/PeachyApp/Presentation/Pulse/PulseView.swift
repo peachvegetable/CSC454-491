@@ -9,53 +9,68 @@ public struct PulseView: View {
         NavigationStack {
             ScrollView {
                 VStack(spacing: 20) {
+                    // Greeting Section
+                    GreetingSection(userName: "there")
+                    
+                    // Family Members Status
+                    if !viewModel.familyMemberStatuses.isEmpty {
+                        FamilyMemberStatusSection(members: viewModel.familyMemberStatuses)
+                    }
+                    
                     // Streak Row - always visible
                     StreakRow(streak: viewModel.currentStreak)
-                    
-                    // Today's Mood Card or Log Mood Row
-                    if let todayLog = viewModel.todayMoodLog {
-                        TodayCard(
-                            moodLog: todayLog,
-                            showEditMood: $viewModel.showEditMood
-                        )
-                    } else {
-                        LogMoodRow {
-                            viewModel.showEditMood = true
-                        }
-                    }
                     
                     // Buffer Countdown Chip
                     if let bufferEndTime = viewModel.bufferEndTime {
                         BufferCountdownChip(endTime: bufferEndTime)
                     }
                     
-                    // Suggested Quest Card
-                    if let quest = viewModel.todaysQuest {
-                        SuggestedQuestCard(quest: quest, onStartQuest: {
-                            viewModel.showQuest(quest)
-                        })
+                    // Quick Actions Section
+                    QuickActionsSection(
+                        showShareHobby: $viewModel.showShareHobby,
+                        showFlashCards: $viewModel.showFlashCards
+                    )
+                    
+                    // Suggested Quest Card - only show non-hobby quests
+                    if let quest = viewModel.todaysQuest, quest.kind != .shareHobby {
+                        SuggestedQuestCard(
+                            quest: quest,
+                            isCompleted: viewModel.isQuestCompleted,
+                            onStartQuest: {
+                                viewModel.showQuest(quest)
+                            }
+                        )
                     }
                 }
                 .padding()
             }
-            .navigationTitle("Pulse")
-            .navigationBarTitleDisplayMode(.large)
+            .navigationBarHidden(true)
             .accessibilityIdentifier("pulseRoot")
         }
         .onAppear {
             viewModel.loadData()
         }
-        .sheet(isPresented: $viewModel.showEditMood) {
-            ColorWheelView(
-                selectedColor: $viewModel.editingColor,
-                selectedEmoji: $viewModel.editingEmoji,
-                onSave: {
-                    await viewModel.saveEditedMood()
-                }
-            )
-        }
         .sheet(item: $viewModel.activeQuest) { quest in
-            QuestDetailView(quest: quest)
+            // Route to appropriate view based on quest type
+            if quest.kind == .shareHobby {
+                ShareHobbyView()
+                    .environmentObject(appState)
+                    .onDisappear {
+                        viewModel.refreshQuestStatus()
+                    }
+            } else {
+                // Generic quest view for other types
+                Text("Quest: \(quest.title)")
+                    .padding()
+            }
+        }
+        .sheet(isPresented: $viewModel.showShareHobby) {
+            ShareHobbyView()
+                .environmentObject(appState)
+        }
+        .sheet(isPresented: $viewModel.showFlashCards) {
+            FlashCardQuizView()
+                .environmentObject(appState)
         }
     }
 }
@@ -167,6 +182,7 @@ struct BufferCountdownChip: View {
 
 struct SuggestedQuestCard: View {
     let quest: Quest
+    let isCompleted: Bool
     let onStartQuest: () -> Void
     
     var body: some View {
@@ -189,15 +205,22 @@ struct SuggestedQuestCard: View {
                 .lineLimit(2)
             
             Button(action: onStartQuest) {
-                Text("Start Quest")
-                    .font(.footnote)
-                    .fontWeight(.medium)
-                    .foregroundColor(.white)
-                    .padding(.horizontal, 20)
-                    .padding(.vertical, 8)
-                    .background(Color(hex: "#2BB3B3"))
-                    .cornerRadius(20)
+                HStack(spacing: 4) {
+                    if isCompleted {
+                        Image(systemName: "checkmark.circle.fill")
+                            .foregroundColor(.white)
+                    }
+                    Text(isCompleted ? "Completed" : "Start Quest")
+                }
+                .font(.footnote)
+                .fontWeight(.medium)
+                .foregroundColor(.white)
+                .padding(.horizontal, 20)
+                .padding(.vertical, 8)
+                .background(isCompleted ? Color.gray : Color(hex: "#2BB3B3"))
+                .cornerRadius(20)
             }
+            .disabled(isCompleted)
         }
         .padding()
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -208,22 +231,189 @@ struct SuggestedQuestCard: View {
 }
 
 
-struct LogMoodRow: View {
+struct GreetingSection: View {
+    let userName: String
+    @State private var greeting = "Good morning"
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("\(greeting),")
+                .font(.title2)
+            Text(userName)
+                .font(.largeTitle)
+                .bold()
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .onAppear {
+            updateGreeting()
+        }
+    }
+    
+    private func updateGreeting() {
+        let hour = Calendar.current.component(.hour, from: Date())
+        if hour < 12 {
+            greeting = "Good morning"
+        } else if hour < 17 {
+            greeting = "Good afternoon"
+        } else {
+            greeting = "Good evening"
+        }
+    }
+}
+
+struct FamilyMemberStatusSection: View {
+    let members: [FamilyMemberStatus]
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Family Pulse")
+                .font(.headline)
+                .foregroundColor(.secondary)
+            
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 20) {
+                    ForEach(members) { member in
+                        FamilyMemberStatusView(member: member)
+                    }
+                }
+            }
+        }
+    }
+}
+
+struct FamilyMemberStatusView: View {
+    let member: FamilyMemberStatus
+    
+    var body: some View {
+        VStack(spacing: 8) {
+            ZStack(alignment: .bottomTrailing) {
+                // Profile picture or initial
+                Circle()
+                    .fill(Color.gray.opacity(0.2))
+                    .frame(width: 60, height: 60)
+                    .overlay(
+                        Text(member.initial)
+                            .font(.title2)
+                            .foregroundColor(.gray)
+                    )
+                
+                // Status indicator
+                Circle()
+                    .fill(member.statusColor)
+                    .frame(width: 16, height: 16)
+                    .overlay(
+                        Circle()
+                            .stroke(Color.white, lineWidth: 2)
+                    )
+            }
+            
+            Text(member.name)
+                .font(.caption)
+                .lineLimit(1)
+        }
+    }
+}
+
+struct EmptyMoodCard: View {
+    var body: some View {
+        VStack(spacing: 16) {
+            Image(systemName: "heart.text.square")
+                .font(.system(size: 40))
+                .foregroundColor(Color.gray.opacity(0.5))
+            
+            Text("No mood logged today")
+                .font(.headline)
+                .foregroundColor(.secondary)
+            
+            Text("Tap the + button to share how you're feeling")
+                .font(.caption)
+                .foregroundColor(.secondary)
+                .multilineTextAlignment(.center)
+        }
+        .frame(maxWidth: .infinity)
+        .padding()
+        .background(Color(.systemBackground))
+        .cornerRadius(12)
+        .shadow(color: .black.opacity(0.05), radius: 5, x: 0, y: 2)
+    }
+}
+
+// Model for family member status
+struct FamilyMemberStatus: Identifiable {
+    let id = UUID()
+    let name: String
+    let initial: String
+    let simpleMoodColor: SimpleMoodColor
+    let lastUpdate: Date
+    
+    var statusColor: Color {
+        // Green, yellow, or red based on last update time
+        let timeSinceUpdate = Date().timeIntervalSince(lastUpdate)
+        if timeSinceUpdate < 3600 { // Less than 1 hour
+            return .green
+        } else if timeSinceUpdate < 86400 { // Less than 24 hours
+            return .yellow
+        } else {
+            return .red
+        }
+    }
+}
+
+struct QuickActionsSection: View {
+    @Binding var showShareHobby: Bool
+    @Binding var showFlashCards: Bool
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Quick Actions")
+                .font(.headline)
+                .foregroundColor(.secondary)
+            
+            HStack(spacing: 12) {
+                QuickActionCard(
+                    title: "Share a Hobby",
+                    subtitle: "Earn 5 points",
+                    icon: "star.fill",
+                    color: Color(hex: "#FFC7B2"),
+                    action: { showShareHobby = true }
+                )
+                
+                QuickActionCard(
+                    title: "Flash Cards",
+                    subtitle: "Test knowledge",
+                    icon: "rectangle.stack.fill",
+                    color: Color(hex: "#2BB3B3"),
+                    action: { showFlashCards = true }
+                )
+            }
+        }
+    }
+}
+
+struct QuickActionCard: View {
+    let title: String
+    let subtitle: String
+    let icon: String
+    let color: Color
     let action: () -> Void
     
     var body: some View {
         Button(action: action) {
-            HStack(spacing: 16) {
-                Image(systemName: "plus.circle.fill")
-                    .font(.title)
-                    .foregroundColor(Color(hex: "#2BB3B3"))
+            VStack(alignment: .leading, spacing: 8) {
+                Image(systemName: icon)
+                    .font(.title2)
+                    .foregroundColor(color)
                 
-                Text("Log your mood")
-                    .font(.headline)
+                Text(title)
+                    .font(.subheadline)
+                    .fontWeight(.medium)
                     .foregroundColor(.primary)
                 
-                Spacer()
+                Text(subtitle)
+                    .font(.caption)
+                    .foregroundColor(.secondary)
             }
+            .frame(maxWidth: .infinity, alignment: .leading)
             .padding()
             .background(Color(.systemBackground))
             .cornerRadius(12)

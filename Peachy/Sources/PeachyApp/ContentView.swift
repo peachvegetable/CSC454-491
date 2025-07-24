@@ -44,6 +44,11 @@ struct TeenTabView: View {
                     Label("Hobbies", systemImage: "sparkles")
                 }
             
+            TreeGardenView()
+                .tabItem {
+                    Label("Garden", systemImage: "tree.fill")
+                }
+            
             ChatListView()
                 .tabItem {
                     Label("Chat", systemImage: "message")
@@ -69,6 +74,11 @@ struct ParentTabView: View {
             HobbyLearningView()
                 .tabItem {
                     Label("Learn", systemImage: "book")
+                }
+            
+            TreeGardenView()
+                .tabItem {
+                    Label("Garden", systemImage: "tree.fill")
                 }
             
             ChatListView()

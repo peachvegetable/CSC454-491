@@ -7,14 +7,19 @@ class PulseViewModel: ObservableObject {
     @Published var currentStreak = 0
     @Published var bufferEndTime: Date?
     @Published var todaysQuest: Quest? = .sample
+    @Published var isQuestCompleted = false
     @Published var showEditMood = false
     @Published var activeQuest: Quest?
     @Published var editingColor: SimpleMoodColor?
     @Published var editingEmoji: String?
+    @Published var familyMemberStatuses: [FamilyMemberStatus] = []
+    @Published var showShareHobby = false
+    @Published var showFlashCards = false
     
     private let authService = ServiceContainer.shared.authService
     private let streakService = ServiceContainer.shared.streakService
     private let moodService = ServiceContainer.shared.moodService
+    private let questService = ServiceContainer.shared.questService
     private var cancellables = Set<AnyCancellable>()
     
     init() {
@@ -31,6 +36,10 @@ class PulseViewModel: ObservableObject {
     func loadData() {
         loadTodayMood()
         loadStreak()
+        loadFamilyMemberStatuses()
+        Task {
+            await loadTodaysQuest()
+        }
     }
     
     private func loadTodayMood() {
@@ -39,9 +48,23 @@ class PulseViewModel: ObservableObject {
     }
     
     private func updateBufferTime(from log: SimpleMoodLog?) {
-        // For now, we'll set a default buffer time
-        // In a real app, this would be stored with the mood log
-        bufferEndTime = nil
+        guard let log = log,
+              let bufferMinutes = log.bufferMinutes,
+              bufferMinutes > 0 else {
+            bufferEndTime = nil
+            return
+        }
+        
+        // Calculate buffer end time
+        let bufferSeconds = TimeInterval(bufferMinutes * 60)
+        let endTime = log.date.addingTimeInterval(bufferSeconds)
+        
+        // Only show buffer if it hasn't expired yet
+        if endTime > Date() {
+            bufferEndTime = endTime
+        } else {
+            bufferEndTime = nil
+        }
     }
     
     private func loadStreak() {
@@ -56,11 +79,17 @@ class PulseViewModel: ObservableObject {
         activeQuest = quest
     }
     
+    func refreshQuestStatus() {
+        Task {
+            await loadTodaysQuest()
+        }
+    }
+    
     func saveEditedMood() async {
         guard let color = editingColor else { return }
         
         do {
-            try await moodService.save(color: color, emoji: editingEmoji)
+            try await moodService.save(color: color, emoji: editingEmoji, bufferMinutes: nil)
             // Reset editing state
             editingColor = nil
             editingEmoji = nil
@@ -68,5 +97,37 @@ class PulseViewModel: ObservableObject {
         } catch {
             print("Error saving mood: \(error)")
         }
+    }
+    
+    private func loadTodaysQuest() async {
+        todaysQuest = await questService.getTodaysQuest()
+        if let quest = todaysQuest {
+            isQuestCompleted = await questService.isQuestCompleted(quest)
+        }
+    }
+    
+    private func loadFamilyMemberStatuses() {
+        // Mock data for now - in production this would come from a service
+        // that fetches family members and their latest mood logs
+        familyMemberStatuses = [
+            FamilyMemberStatus(
+                name: "Mom",
+                initial: "M",
+                simpleMoodColor: .green,
+                lastUpdate: Date().addingTimeInterval(-1800) // 30 minutes ago
+            ),
+            FamilyMemberStatus(
+                name: "Dad",
+                initial: "D",
+                simpleMoodColor: .red,
+                lastUpdate: Date().addingTimeInterval(-7200) // 2 hours ago
+            ),
+            FamilyMemberStatus(
+                name: "Sister",
+                initial: "S",
+                simpleMoodColor: .yellow,
+                lastUpdate: Date().addingTimeInterval(-172800) // 2 days ago
+            )
+        ]
     }
 }

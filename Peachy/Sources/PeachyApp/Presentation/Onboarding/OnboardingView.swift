@@ -48,10 +48,12 @@ struct OnboardingView: View {
                                           removal: .move(edge: .leading)))
                     
             case .moodIntro:
-                MoodIntroView(currentStep: $currentStep)
-                    .environmentObject(viewModel)
-                    .transition(.asymmetric(insertion: .move(edge: .trailing), 
-                                          removal: .move(edge: .leading)))
+                // Skip mood intro, go directly to complete
+                EmptyView()
+                    .onAppear {
+                        currentStep = .complete
+                        onComplete()
+                    }
                 
             case .complete:
                 // Show a loading state while transitioning

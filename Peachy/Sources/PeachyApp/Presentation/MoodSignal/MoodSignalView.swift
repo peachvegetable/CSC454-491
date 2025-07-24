@@ -250,7 +250,7 @@ class MoodSignalViewModel: ObservableObject {
         
         // Save mood
         do {
-            try await moodService.save(color: mood.simpleColor, emoji: mood.emoji)
+            try await moodService.save(color: mood.simpleColor, emoji: mood.emoji, bufferMinutes: Int(bufferMinutes))
             
             // Schedule notification
             try await moodService.scheduleMoodNotification(after: Int(bufferMinutes))
