@@ -18,8 +18,8 @@ public struct TreeGardenView: View {
             )
             .ignoresSafeArea()
             .edgesIgnoringSafeArea(.all)
-                
-                ScrollView {
+            
+            ScrollView {
                     VStack(spacing: 20) {
                         // Points display
                         HStack {
@@ -163,7 +163,6 @@ public struct TreeGardenView: View {
                         }
                     }
                     .padding(.top, 20)
-                    
                 }
                 .padding()
                 .padding(.bottom, 20) // Extra padding to avoid tab bar
@@ -176,6 +175,7 @@ public struct TreeGardenView: View {
             TreeCollectionView(viewModel: viewModel)
         }
         .onAppear {
+            print("TreeGardenView: View appeared")
             viewModel.loadData()
         }
     }

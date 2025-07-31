@@ -25,7 +25,6 @@ struct PeachyRunnerApp: App {
     }
     
     private func setupAppearance() {
-        let peachColor = UIColor(red: 255/255, green: 199/255, blue: 178/255, alpha: 1.0)
         let tealColor = UIColor(red: 43/255, green: 179/255, blue: 179/255, alpha: 1.0)
         
         UINavigationBar.appearance().tintColor = tealColor

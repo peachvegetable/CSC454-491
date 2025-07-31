@@ -2,7 +2,6 @@ import SwiftUI
 
 struct ExploreView: View {
     @State private var selectedGame = 0
-    @State private var navigationPath = NavigationPath()
     @Binding var hideFloatingButton: Bool
     
     init(hideFloatingButton: Binding<Bool> = .constant(false)) {
@@ -10,7 +9,7 @@ struct ExploreView: View {
     }
     
     var body: some View {
-        NavigationStack(path: $navigationPath) {
+        NavigationStack {
             VStack(spacing: 20) {
                 Text("Explore Activities")
                     .font(.largeTitle)
@@ -20,10 +19,15 @@ struct ExploreView: View {
                 ScrollView {
                     VStack(spacing: 16) {
                         // Tree Garden Card
-                        Button(action: {
-                            hideFloatingButton = true
-                            navigationPath.append("treeGarden")
-                        }) {
+                        NavigationLink {
+                            TreeGardenView()
+                                .onAppear {
+                                    hideFloatingButton = true
+                                }
+                                .onDisappear {
+                                    hideFloatingButton = false
+                                }
+                        } label: {
                             GameCard(
                                 title: "Tree Garden",
                                 subtitle: "Grow your mood tree",
@@ -38,9 +42,9 @@ struct ExploreView: View {
                         .buttonStyle(PlainButtonStyle())
                         
                         // Flash Cards Card
-                        Button(action: {
-                            navigationPath.append("flashCards")
-                        }) {
+                        NavigationLink {
+                            FlashCardQuizView()
+                        } label: {
                             GameCard(
                                 title: "Flash Cards",
                                 subtitle: "Test your knowledge",
@@ -54,48 +58,78 @@ struct ExploreView: View {
                         }
                         .buttonStyle(PlainButtonStyle())
                         
-                        // Coming Soon Cards
-                        GameCard(
-                            title: "Mood Patterns",
-                            subtitle: "Coming soon",
-                            icon: "chart.line.uptrend.xyaxis",
-                            gradient: LinearGradient(
-                                colors: [Color.gray.opacity(0.5), Color.gray.opacity(0.3)],
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            ),
-                            disabled: true
-                        )
+                        // Family Voting Card
+                        NavigationLink {
+                            FamilyVotingView()
+                        } label: {
+                            GameCard(
+                                title: "Family Voting",
+                                subtitle: "Make decisions together",
+                                icon: "hand.raised.fill",
+                                gradient: LinearGradient(
+                                    colors: [Color.purple, Color.purple.opacity(0.8)],
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
+                                )
+                            )
+                        }
+                        .buttonStyle(PlainButtonStyle())
                         
-                        GameCard(
-                            title: "Family Challenges",
-                            subtitle: "Coming soon",
-                            icon: "person.3.fill",
-                            gradient: LinearGradient(
-                                colors: [Color.gray.opacity(0.5), Color.gray.opacity(0.3)],
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            ),
-                            disabled: true
-                        )
+                        // Family Calendar Card
+                        NavigationLink {
+                            FamilyCalendarView()
+                        } label: {
+                            GameCard(
+                                title: "Family Calendar",
+                                subtitle: "Stay synchronized",
+                                icon: "calendar",
+                                gradient: LinearGradient(
+                                    colors: [Color.blue, Color.blue.opacity(0.8)],
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
+                                )
+                            )
+                        }
+                        .buttonStyle(PlainButtonStyle())
+                        
+                        // Family Todo List Card
+                        NavigationLink {
+                            FamilyTodoListView()
+                        } label: {
+                            GameCard(
+                                title: "Family Tasks",
+                                subtitle: "Share responsibilities",
+                                icon: "checklist",
+                                gradient: LinearGradient(
+                                    colors: [Color.orange, Color.orange.opacity(0.8)],
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
+                                )
+                            )
+                        }
+                        .buttonStyle(PlainButtonStyle())
+                        
+                        // Family Photos Card
+                        NavigationLink {
+                            FamilyPhotoView()
+                        } label: {
+                            GameCard(
+                                title: "Family Photos",
+                                subtitle: "Capture memories together",
+                                icon: "camera.fill",
+                                gradient: LinearGradient(
+                                    colors: [Color.pink, Color.pink.opacity(0.8)],
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
+                                )
+                            )
+                        }
+                        .buttonStyle(PlainButtonStyle())
                     }
                     .padding(.horizontal)
                 }
             }
             .navigationBarHidden(true)
-            .navigationDestination(for: String.self) { destination in
-                switch destination {
-                case "treeGarden":
-                    TreeGardenView()
-                        .onDisappear {
-                            hideFloatingButton = false
-                        }
-                case "flashCards":
-                    FlashCardQuizView()
-                default:
-                    EmptyView()
-                }
-            }
         }
     }
 }
