@@ -22,75 +22,8 @@ public struct ContentView: View {
     
     @ViewBuilder
     private var mainTabView: some View {
-        if appState.userRole == UserRole.teen {
-            TeenTabView()
-        } else {
-            ParentTabView()
-        }
-    }
-}
-
-// MARK: - Teen Tab View
-struct TeenTabView: View {
-    var body: some View {
-        TabView {
-            MoodSignalView()
-                .tabItem {
-                    Label("Mood", systemImage: "face.smiling")
-                }
-            
-            HobbyExplorerView()
-                .tabItem {
-                    Label("Hobbies", systemImage: "sparkles")
-                }
-            
-            TreeGardenView()
-                .tabItem {
-                    Label("Garden", systemImage: "tree.fill")
-                }
-            
-            ChatListView()
-                .tabItem {
-                    Label("Chat", systemImage: "message")
-                }
-            
-            ProfileView()
-                .tabItem {
-                    Label("Profile", systemImage: "person.circle")
-                }
-        }
-    }
-}
-
-// MARK: - Parent Tab View
-struct ParentTabView: View {
-    var body: some View {
-        TabView {
-            ParentDashboardView()
-                .tabItem {
-                    Label("Dashboard", systemImage: "chart.bar")
-                }
-            
-            HobbyLearningView()
-                .tabItem {
-                    Label("Learn", systemImage: "book")
-                }
-            
-            TreeGardenView()
-                .tabItem {
-                    Label("Garden", systemImage: "tree.fill")
-                }
-            
-            ChatListView()
-                .tabItem {
-                    Label("Chat", systemImage: "message")
-                }
-            
-            ProfileView()
-                .tabItem {
-                    Label("Profile", systemImage: "person.circle")
-                }
-        }
+        // All users now use the same tab view
+        TabBarView()
     }
 }
 

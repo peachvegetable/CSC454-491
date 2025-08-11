@@ -30,6 +30,6 @@ public class UserProfile: Object, Identifiable {
 }
 
 public enum UserRole: String, CaseIterable {
-    case teen = "Teen"
-    case parent = "Parent"
+    case user = "User"
+    case admin = "Admin"
 }

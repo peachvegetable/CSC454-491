@@ -487,21 +487,6 @@ struct VotingDetailView: View {
     
     var body: some View {
         VStack(spacing: 0) {
-            // Header with back button
-            HStack {
-                Button(action: { dismiss() }) {
-                    HStack(spacing: 4) {
-                        Image(systemName: "chevron.left")
-                            .font(.system(size: 16, weight: .semibold))
-                        Text("Back")
-                            .font(.body)
-                    }
-                    .foregroundColor(Color(hex: "#2BB3B3"))
-                }
-                Spacer()
-            }
-            .padding()
-            
             VStack(alignment: .leading, spacing: 16) {
                 HStack {
                     VStack(alignment: .leading, spacing: 4) {
@@ -599,6 +584,7 @@ struct VotingDetailView: View {
             }
         }
         .navigationBarTitleDisplayMode(.inline)
+        .navigationTitle("Vote")
     }
     
     func submitVote() {
@@ -635,23 +621,7 @@ struct PollResultsView: View {
     @Environment(\.dismiss) var dismiss
     
     var body: some View {
-        VStack(spacing: 0) {
-            // Header with back button
-            HStack {
-                Button(action: { dismiss() }) {
-                    HStack(spacing: 4) {
-                        Image(systemName: "chevron.left")
-                            .font(.system(size: 16, weight: .semibold))
-                        Text("Back")
-                            .font(.body)
-                    }
-                    .foregroundColor(Color(hex: "#2BB3B3"))
-                }
-                Spacer()
-            }
-            .padding()
-            
-            ScrollView {
+        ScrollView {
                 VStack(alignment: .leading, spacing: 20) {
                     // Header
                     VStack(alignment: .leading, spacing: 8) {
@@ -720,8 +690,8 @@ struct PollResultsView: View {
                 }
                 .padding()
             }
-        }
         .navigationBarTitleDisplayMode(.inline)
+        .navigationTitle("Results")
     }
 }
 

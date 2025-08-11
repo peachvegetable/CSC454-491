@@ -211,7 +211,7 @@ struct TaskRow: View {
                         .font(.title2)
                         .foregroundColor(isCompleted ? .green : .gray.opacity(0.5))
                 }
-                .buttonStyle(PlainButtonStyle())
+                .buttonStyle(.plain)
                 
                 VStack(alignment: .leading, spacing: 6) {
                     Text(task.title)
@@ -300,7 +300,7 @@ struct TaskRow: View {
             .background(Color(.systemGray6))
             .cornerRadius(12)
         }
-        .buttonStyle(PlainButtonStyle())
+        .buttonStyle(.plain)
         .sheet(isPresented: $showDetail) {
             TaskDetailView(task: task, viewModel: viewModel)
         }

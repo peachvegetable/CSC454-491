@@ -43,7 +43,7 @@ public class MockAuthService: AuthServiceProtocol {
         userProfile.id = userId
         userProfile.email = email
         userProfile.displayName = email.components(separatedBy: "@").first ?? "User"
-        userProfile.role = UserRole.teen.rawValue
+        userProfile.role = UserRole.user.rawValue
         userProfile.createdAt = Date()
         
         try await MainActor.run {
@@ -64,7 +64,7 @@ public class MockAuthService: AuthServiceProtocol {
         userProfile.id = userId
         userProfile.email = "apple.user@icloud.com"
         userProfile.displayName = "Apple User"
-        userProfile.role = UserRole.teen.rawValue
+        userProfile.role = UserRole.user.rawValue
         userProfile.createdAt = Date()
         
         try await MainActor.run {

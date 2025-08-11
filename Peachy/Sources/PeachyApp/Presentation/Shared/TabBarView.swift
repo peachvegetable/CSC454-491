@@ -6,27 +6,12 @@ public struct TabBarView: View {
     @State private var showProfile = false
     @State private var hideFloatingButton = false
     @EnvironmentObject var appState: AppState
+    @StateObject private var featureSettings = ServiceContainer.shared.featureSettingsService
     
     public var body: some View {
         ZStack {
-            VStack(spacing: 0) {
-                // Top Navigation Bar
-                HStack {
-                    Spacer()
-                    
-                    // Profile button in top right
-                    Button(action: { showProfile = true }) {
-                        Image(systemName: "person.circle.fill")
-                            .font(.system(size: 28))
-                            .foregroundColor(Color(hex: "#2BB3B3"))
-                    }
-                    .padding(.trailing)
-                }
-                .padding(.vertical, 8)
-                .background(Color(UIColor.systemBackground))
-                
-                // Main Tab Content
-                TabView(selection: $selectedTab) {
+            // Main Tab Content
+            TabView(selection: $selectedTab) {
                     PulseView()
                         .tabItem {
                             Image(systemName: "house.fill")
@@ -58,15 +43,16 @@ public struct TabBarView: View {
                         }
                         .tag(3)
                     
-                    ChatListView(hideFloatingButton: $hideFloatingButton)
-                        .tabItem {
-                            Image(systemName: "bubble.left.and.bubble.right.fill")
-                            Text("Chat")
-                        }
-                        .tag(4)
+                    if featureSettings.isFeatureEnabled(.chat) {
+                        ChatListView(hideFloatingButton: $hideFloatingButton)
+                            .tabItem {
+                                Image(systemName: "bubble.left.and.bubble.right.fill")
+                                Text("Chat")
+                            }
+                            .tag(4)
+                    }
                 }
                 .accentColor(Color(hex: "#2BB3B3"))
-            }
             
             // Floating Plus Button - positioned in center of tab bar
             if !hideFloatingButton {
@@ -101,6 +87,10 @@ public struct TabBarView: View {
         .sheet(isPresented: $showProfile) {
             ProfileView()
                 .environmentObject(appState)
+        }
+        .onAppear {
+            featureSettings.loadSettings()
+            featureSettings.startObservingRequests()
         }
     }
 }

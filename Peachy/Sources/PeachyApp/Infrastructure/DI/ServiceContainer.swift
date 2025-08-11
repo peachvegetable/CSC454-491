@@ -15,6 +15,12 @@ public final class ServiceContainer {
     private let _pointService: PointServiceProtocol
     private let _questService: QuestServiceProtocol
     private let _treeService: TreeServiceProtocol
+    private let _taskService: TaskService
+    private let _rewardService: RewardService
+    private let _pointsService: PointsService
+    private let _featureSettingsService: FeatureSettingsService
+    private let _subscriptionService: SubscriptionService
+    private let _empathyTipService: EmpathyTipService
     
     var authService: AuthServiceProtocol { 
         get { _authService }
@@ -30,6 +36,12 @@ public final class ServiceContainer {
     var pointService: PointServiceProtocol { _pointService }
     var questService: QuestServiceProtocol { _questService }
     var treeService: TreeServiceProtocol { _treeService }
+    var taskService: TaskService { _taskService }
+    var rewardService: RewardService { _rewardService }
+    var pointsService: PointsService { _pointsService }
+    var featureSettingsService: FeatureSettingsService { _featureSettingsService }
+    var subscriptionService: SubscriptionService { _subscriptionService }
+    var empathyTipService: EmpathyTipService { _empathyTipService }
     
     private init() {
         // Initialize @MainActor services on main thread
@@ -58,6 +70,24 @@ public final class ServiceContainer {
         self._treeService = MainActor.assumeIsolated {
             MockTreeService()
         }
+        self._taskService = MainActor.assumeIsolated {
+            TaskService()
+        }
+        self._rewardService = MainActor.assumeIsolated {
+            RewardService()
+        }
+        self._pointsService = MainActor.assumeIsolated {
+            PointsService()
+        }
+        self._featureSettingsService = MainActor.assumeIsolated {
+            FeatureSettingsService()
+        }
+        self._subscriptionService = MainActor.assumeIsolated {
+            SubscriptionService()
+        }
+        self._empathyTipService = MainActor.assumeIsolated {
+            EmpathyTipService()
+        }
         
         // Set dependencies after initialization to avoid circular references
         MainActor.assumeIsolated {
@@ -69,6 +99,20 @@ public final class ServiceContainer {
                 authService: _authService,
                 pointService: _pointService,
                 hobbyService: _hobbyService
+            )
+            
+            // Set dependencies for reward system services
+            _taskService.authService = _authService
+            _rewardService.authService = _authService
+            _pointsService.authService = _authService
+            _pointsService.taskService = _taskService
+            _pointsService.rewardService = _rewardService
+            
+            // Set dependencies for empathy tip service
+            _empathyTipService.setServices(
+                moodService: _moodService,
+                authService: _authService,
+                subscriptionService: _subscriptionService
             )
         }
     }

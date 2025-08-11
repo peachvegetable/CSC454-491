@@ -77,7 +77,7 @@ struct AuthView: View {
             do {
                 try await viewModel.signIn(email: email, password: password)
                 await MainActor.run {
-                    currentStep = .rolePicker
+                    currentStep = .hobbyPicker
                 }
             } catch {
                 await MainActor.run {
@@ -96,7 +96,7 @@ struct AuthView: View {
             do {
                 try await viewModel.signInWithApple()
                 await MainActor.run {
-                    currentStep = .rolePicker
+                    currentStep = .hobbyPicker
                 }
             } catch {
                 await MainActor.run {

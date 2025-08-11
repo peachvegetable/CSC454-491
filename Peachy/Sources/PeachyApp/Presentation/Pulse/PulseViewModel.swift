@@ -15,6 +15,8 @@ class PulseViewModel: ObservableObject {
     @Published var familyMemberStatuses: [FamilyMemberStatus] = []
     @Published var showShareHobby = false
     @Published var showFlashCards = false
+    @Published var currentUserName: String = ""
+    @Published var totalPoints: Int = 0
     
     private let authService = ServiceContainer.shared.authService
     private let streakService = ServiceContainer.shared.streakService
@@ -37,8 +39,26 @@ class PulseViewModel: ObservableObject {
         loadTodayMood()
         loadStreak()
         loadFamilyMemberStatuses()
+        loadUserInfo()
         Task {
             await loadTodaysQuest()
+        }
+    }
+    
+    private func loadUserInfo() {
+        if let user = authService.currentUser {
+            currentUserName = user.displayName
+            // Load points from unified points service
+            UnifiedPointsService.shared.loadUserPoints(for: user.id)
+            totalPoints = UnifiedPointsService.shared.currentUserPoints
+            
+            // Subscribe to point changes
+            UnifiedPointsService.shared.$currentUserPoints
+                .receive(on: DispatchQueue.main)
+                .sink { [weak self] points in
+                    self?.totalPoints = points
+                }
+                .store(in: &cancellables)
         }
     }
     

@@ -4,7 +4,6 @@ enum OnboardingStep {
     case welcome
     case auth
     case signUp
-    case rolePicker
     case hobbyPicker
     case moodIntro
     case complete
@@ -35,12 +34,6 @@ struct OnboardingView: View {
                     .transition(.asymmetric(insertion: .move(edge: .trailing), 
                                           removal: .move(edge: .leading)))
                 
-            case .rolePicker:
-                RolePickerView(currentStep: $currentStep)
-                    .environmentObject(viewModel)
-                    .transition(.asymmetric(insertion: .move(edge: .trailing), 
-                                          removal: .move(edge: .leading)))
-                    
             case .hobbyPicker:
                 HobbyPickerView(currentStep: $currentStep)
                     .environmentObject(viewModel)

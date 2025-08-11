@@ -4,6 +4,7 @@ public struct ProfileView: View {
     @EnvironmentObject var appState: AppState
     @StateObject private var viewModel = ProfileViewModel()
     @State private var showPairingCode = false
+    @State private var showSubscriptionView = false
     let destination: ProfileDestination?
     
     public init(destination: ProfileDestination? = nil) {
@@ -26,6 +27,9 @@ public struct ProfileView: View {
                     streakSection
                         .id(ProfileDestination.history)
                     
+                    // Subscription Management
+                    subscriptionSection
+                    
                     signOutSection
                 }
                 .onAppear {
@@ -43,6 +47,9 @@ public struct ProfileView: View {
             .sheet(isPresented: $viewModel.showAddHobby) {
                 AddHobbySheet()
                     .environmentObject(viewModel)
+            }
+            .sheet(isPresented: $showSubscriptionView) {
+                SubscriptionView()
             }
             .onAppear {
                 viewModel.loadUserProfile()
@@ -90,7 +97,7 @@ public struct ProfileView: View {
                 HStack {
                     Image(systemName: "link")
                         .foregroundColor(Color(hex: "#2BB3B3"))
-                    Text("Pair with \(viewModel.userSnapshot?.userRole == UserRole.teen ? "Parent" : "Teen")")
+                    Text("Connect with Family")
                         .foregroundColor(.primary)
                     Spacer()
                     if viewModel.userSnapshot?.pairedWithUserId != nil {
@@ -199,6 +206,37 @@ public struct ProfileView: View {
             }
         } header: {
             Text("My Hobbies")
+        }
+    }
+    
+    private var subscriptionSection: some View {
+        Section {
+            Button(action: { showSubscriptionView = true }) {
+                HStack {
+                    Image(systemName: "creditcard.fill")
+                        .foregroundColor(.brandPeach)
+                        .frame(width: 30)
+                    
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Manage Subscription")
+                            .font(.headline)
+                            .foregroundColor(.primary)
+                        
+                        Text("Unlock premium features")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
+                    
+                    Spacer()
+                    
+                    Image(systemName: "chevron.right")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
+                .padding(.vertical, 4)
+            }
+        } header: {
+            Text("Subscription")
         }
     }
     

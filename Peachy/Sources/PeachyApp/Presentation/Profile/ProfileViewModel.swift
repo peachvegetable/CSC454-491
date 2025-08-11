@@ -11,6 +11,11 @@ class ProfileViewModel: ObservableObject {
     @Published var userHobbies: [HobbyModel] = []
     @Published var showAddHobby = false
     
+    var isAdmin: Bool {
+        guard let role = userSnapshot?.userRole else { return false }
+        return role == .admin
+    }
+    
     private let authService = ServiceContainer.shared.authService
     private let streakService = ServiceContainer.shared.streakService
     private let pointService = ServiceContainer.shared.pointService

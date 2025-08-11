@@ -40,17 +40,36 @@ class TreeGardenViewModel: ObservableObject {
     func waterTree(amount: Int) async {
         guard let userId = authService.currentUser?.id else { return }
         
+        // Convert water drops to points (1 point = 5 drops)
+        let pointsToSpend = max(1, amount / 5)
+        
+        // Check if user has enough points
+        let currentPoints = UnifiedPointsService.shared.getUserPoints(for: userId)
+        guard currentPoints >= pointsToSpend else {
+            await MainActor.run {
+                self.successMessage = "Not enough points! You need \(pointsToSpend) points."
+                self.showSuccess = true
+            }
+            return
+        }
+        
+        // Spend points for water
+        guard UnifiedPointsService.shared.spendPoints(from: userId, amount: pointsToSpend, reason: "Watered tree with \(amount) drops") else {
+            return
+        }
+        
         do {
+            // Water the tree with the drops (not points)
             let result = try await treeService.waterTree(userId: userId, points: amount)
             
-            // Get updated points before updating UI
-            let updatedPoints = await pointService.total(for: userId)
+            // Get updated points from unified service
+            let updatedPoints = UnifiedPointsService.shared.getUserPoints(for: userId)
             
             await MainActor.run {
                 // Update current tree
                 self.currentTree = result.tree
                 
-                // Update points
+                // Update points display
                 self.userPoints = updatedPoints
                 
                 // Show success message

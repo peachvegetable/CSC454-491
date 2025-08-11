@@ -21,16 +21,16 @@ struct PairingView: View {
                     .font(.title)
                     .fontWeight(.semibold)
                 
-                Text("Link with your \(appState.userRole == UserRole.teen ? "parent" : "teen") to start sharing moods and activities")
+                Text("Link with your family to start sharing moods and activities")
                     .font(.body)
                     .foregroundColor(.secondary)
                     .multilineTextAlignment(.center)
                     .padding(.horizontal)
                 
-                if appState.userRole == UserRole.parent {
-                    parentView
+                if appState.userRole == UserRole.admin {
+                    adminView
                 } else {
-                    teenView
+                    userView
                 }
                 
                 Spacer()
@@ -44,13 +44,13 @@ struct PairingView: View {
         }
     }
     
-    // MARK: - Parent View
+    // MARK: - Admin View
     @ViewBuilder
-    private var parentView: some View {
+    private var adminView: some View {
         VStack(spacing: 20) {
             if let code = generatedCode {
                 VStack(spacing: 16) {
-                    Text("Share this code with your teen:")
+                    Text("Share this code with family members:")
                         .font(.headline)
                     
                     Text(code)
@@ -92,9 +92,9 @@ struct PairingView: View {
         .padding(.horizontal)
     }
     
-    // MARK: - Teen View
+    // MARK: - User View
     @ViewBuilder
-    private var teenView: some View {
+    private var userView: some View {
         VStack(spacing: 20) {
             TextField("Enter pairing code", text: $pairingCode)
                 .font(.system(size: 24, weight: .semibold, design: .monospaced))
