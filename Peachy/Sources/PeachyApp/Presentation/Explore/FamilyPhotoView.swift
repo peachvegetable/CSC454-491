@@ -959,6 +959,20 @@ class FamilyPhotoViewModel: ObservableObject {
             print("ViewModel: Photo not found with id: \(photo.id)")
         }
     }
+    
+    func createAlbum(name: String) {
+        let newAlbum = PhotoAlbum(
+            id: UUID().uuidString,
+            name: name,
+            coverPhotoName: "photo.stack",
+            photoCount: 0,
+            createdBy: "currentUser",
+            createdAt: Date(),
+            isDefault: false
+        )
+        albums.append(newAlbum)
+        print("ViewModel: Created new album '\(name)' with id: \(newAlbum.id)")
+    }
 }
 
 // MARK: - Supporting Views (Placeholders)
@@ -1314,7 +1328,7 @@ struct CreateAlbumView: View {
                 }
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button("Create") {
-                        // Create album logic
+                        viewModel.createAlbum(name: albumName)
                         dismiss()
                     }
                     .disabled(albumName.isEmpty)
